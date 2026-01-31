@@ -11,13 +11,16 @@ export class SearchBar extends HTMLElement {
   connectedCallback() {
     this.innerHTML = `
       <div class="search-bar">
-        <input
-          class="search-bar__input"
-          type="search"
-          placeholder="Search movies & shows..."
-          autocomplete="off"
-          aria-label="Search movies and shows"
-        />
+        <div class="search-bar__header">
+          <input
+            class="search-bar__input"
+            type="search"
+            placeholder="Search movies & shows..."
+            autocomplete="off"
+            aria-label="Search movies and shows"
+          />
+          <button class="search-bar__cancel" type="button">Cancel</button>
+        </div>
         <ul class="search-results" role="listbox"></ul>
       </div>
     `;
@@ -26,10 +29,9 @@ export class SearchBar extends HTMLElement {
     this.results = this.querySelector(".search-results")!;
 
     this.input.addEventListener("input", debounce(() => this.onInput(), 300));
+    this.input.addEventListener("focus", () => this.activate());
     this.input.addEventListener("keydown", (e) => this.onKeydown(e));
-    document.addEventListener("click", (e) => {
-      if (!this.contains(e.target as Node)) this.clearResults();
-    });
+    this.querySelector(".search-bar__cancel")!.addEventListener("click", () => this.deactivate());
   }
 
   private async onInput() {
@@ -45,9 +47,19 @@ export class SearchBar extends HTMLElement {
 
   private onKeydown(e: KeyboardEvent) {
     if (e.key === "Escape") {
-      this.clearResults();
-      this.input.blur();
+      this.deactivate();
     }
+  }
+
+  private activate() {
+    this.querySelector(".search-bar")!.classList.add("is-active");
+  }
+
+  private deactivate() {
+    this.clearResults();
+    this.input.value = "";
+    this.input.blur();
+    this.querySelector(".search-bar")!.classList.remove("is-active");
   }
 
   private renderResults(items: TmdbSearchResult[]) {
@@ -79,8 +91,7 @@ export class SearchBar extends HTMLElement {
 
   private onSelect(item: TmdbSearchResult) {
     this.selected = item;
-    this.clearResults();
-    this.input.value = "";
+    this.deactivate();
     this.showAddForm(item);
   }
 
