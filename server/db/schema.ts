@@ -6,6 +6,8 @@ export const watchItems = sqliteTable("watch_items", {
   tmdbId: integer("tmdb_id").notNull(),
   mediaType: text("media_type", { enum: ["movie", "tv"] }).notNull(),
   title: text("title").notNull(),
+  originalTitle: text("original_title"),
+  originalLanguage: text("original_language").notNull().default("en"),
   posterPath: text("poster_path"),
   year: text("year"),
   note: text("note").notNull().default(""),

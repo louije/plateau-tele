@@ -1,12 +1,13 @@
-import { searchTmdb, addItem } from "../services/api.js";
+import { searchTmdb } from "../services/api.js";
 import { debounce } from "../lib/debounce.js";
 import { posterUrl } from "../lib/tmdb-image.js";
-import type { TmdbSearchResult, WatchItemCreate } from "../../shared/types.js";
+import { displayTitle } from "../lib/title.js";
+import { t } from "../i18n/index.js";
+import type { TmdbSearchResult } from "../../shared/types.js";
 
 export class SearchBar extends HTMLElement {
   private input!: HTMLInputElement;
   private results!: HTMLUListElement;
-  private selected: TmdbSearchResult | null = null;
 
   connectedCallback() {
     this.innerHTML = `
@@ -15,11 +16,11 @@ export class SearchBar extends HTMLElement {
           <input
             class="search-bar__input"
             type="search"
-            placeholder="Search movies & shows..."
+            placeholder="${t("search.placeholder")}"
             autocomplete="off"
-            aria-label="Search movies and shows"
+            aria-label="${t("search.ariaLabel")}"
           />
-          <button class="search-bar__cancel" type="button">Cancel</button>
+          <button class="search-bar__cancel" type="button">${t("search.cancel")}</button>
         </div>
         <ul class="search-results" role="listbox"></ul>
       </div>
@@ -32,6 +33,14 @@ export class SearchBar extends HTMLElement {
     this.input.addEventListener("focus", () => this.activate());
     this.input.addEventListener("keydown", (e) => this.onKeydown(e));
     this.querySelector(".search-bar__cancel")!.addEventListener("click", () => this.deactivate());
+
+    // Restore search from ?q param
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q) {
+      this.input.value = q;
+      this.activate();
+      this.onInput();
+    }
   }
 
   private async onInput() {
@@ -69,84 +78,44 @@ export class SearchBar extends HTMLElement {
     for (const item of items) {
       const frag = tpl.content.cloneNode(true) as DocumentFragment;
       const li = frag.querySelector(".search-result")!;
+      const link = li.querySelector(".search-result__link") as HTMLAnchorElement;
       const img = li.querySelector(".search-result__poster") as HTMLImageElement;
-      const title = li.querySelector(".search-result__title")!;
+      const titleEl = li.querySelector(".search-result__title")!;
+      const subtitleEl = li.querySelector(".search-result__subtitle")!;
       const meta = li.querySelector(".search-result__meta")!;
 
+      const q = encodeURIComponent(this.input.value.trim());
+      link.href = `/detail/${item.mediaType}/${item.id}?q=${q}`;
+
       const src = posterUrl(item.posterPath, "w92");
-      if (src) img.src = src;
-      title.textContent = item.title;
-      meta.textContent = [item.mediaType === "tv" ? "TV" : "Movie", item.year]
+      if (src) {
+        img.src = src;
+        img.style.viewTransitionName = `poster-${item.id}`;
+      }
+
+      const { primary, subtitle } = displayTitle(item.title, item.originalTitle, item.originalLanguage);
+      titleEl.textContent = primary;
+      titleEl.style.viewTransitionName = `title-${item.id}`;
+
+      if (subtitle) subtitleEl.textContent = subtitle;
+      else subtitleEl.remove();
+
+      meta.textContent = [
+        item.mediaType === "tv" ? t("watchItem.tv") : t("watchItem.movie"),
+        item.year,
+        item.country,
+        item.duration,
+        item.director,
+      ]
         .filter(Boolean)
         .join(" · ");
 
-      li.addEventListener("click", () => this.onSelect(item));
       this.results.appendChild(frag);
     }
   }
 
   private clearResults() {
     this.results.innerHTML = "";
-  }
-
-  private onSelect(item: TmdbSearchResult) {
-    this.selected = item;
-    this.deactivate();
-    this.showAddForm(item);
-  }
-
-  private showAddForm(item: TmdbSearchResult) {
-    const tpl = document.getElementById("add-form-tpl") as HTMLTemplateElement;
-    const frag = tpl.content.cloneNode(true) as DocumentFragment;
-    const overlay = frag.querySelector(".add-form-overlay")!;
-    const form = frag.querySelector(".add-form") as HTMLFormElement;
-    const img = form.querySelector(".add-form__poster") as HTMLImageElement;
-    const title = form.querySelector(".add-form__title")!;
-    const overview = form.querySelector(".add-form__overview")!;
-
-    const src = posterUrl(item.posterPath);
-    if (src) img.src = src;
-    else img.remove();
-    title.textContent = `${item.title}${item.year ? ` (${item.year})` : ""}`;
-    overview.textContent = item.overview;
-
-    // Restore last used name
-    const lastUser = localStorage.getItem("plateau-user") || "";
-    const addedByInput = form.querySelector('input[name="addedBy"]') as HTMLInputElement;
-    addedByInput.value = lastUser;
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fd = new FormData(form);
-      const note = (fd.get("note") as string).trim();
-      const addedBy = (fd.get("addedBy") as string).trim();
-
-      localStorage.setItem("plateau-user", addedBy);
-
-      const payload: WatchItemCreate = {
-        tmdbId: item.id,
-        mediaType: item.mediaType,
-        title: item.title,
-        posterPath: item.posterPath,
-        year: item.year,
-        note,
-        addedBy,
-      };
-
-      await addItem(payload);
-      overlay.remove();
-    });
-
-    overlay.querySelector(".btn-cancel")!.addEventListener("click", () => {
-      overlay.remove();
-    });
-
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) overlay.remove();
-    });
-
-    document.body.appendChild(frag);
-    (form.querySelector("textarea") as HTMLTextAreaElement).focus();
   }
 }
 

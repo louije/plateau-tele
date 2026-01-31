@@ -12,6 +12,8 @@ const makeItem = (title: string, tmdbId: number): WatchItemCreate => ({
   tmdbId,
   mediaType: "movie",
   title,
+  originalTitle: null,
+  originalLanguage: "en",
   posterPath: null,
   year: "2024",
   note: `Adding ${title}`,

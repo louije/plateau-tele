@@ -17,6 +17,22 @@
     letter-spacing: -0.01em;
   }
 
+  header h1 a {
+    color: inherit;
+  }
+
+  .header-home {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+  }
+
+  .logo-home {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius);
+  }
+
   main {
     display: grid;
     gap: var(--space-md);
@@ -24,5 +40,9 @@
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-xl));
     max-width: 600px;
     margin: 0 auto;
+  }
+
+  main.layout-wide {
+    max-width: none;
   }
 }

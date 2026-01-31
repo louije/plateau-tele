@@ -12,6 +12,8 @@ const sampleItem: WatchItemCreate = {
   tmdbId: 550,
   mediaType: "movie",
   title: "Fight Club",
+  originalTitle: null,
+  originalLanguage: "en",
   posterPath: "/poster.jpg",
   year: "1999",
   note: "Brad Pitt is great in this",

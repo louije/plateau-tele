@@ -5,6 +5,8 @@ export interface WatchItem {
   tmdbId: number;
   mediaType: MediaType;
   title: string;
+  originalTitle: string | null;
+  originalLanguage: string;
   posterPath: string | null;
   year: string | null;
   note: string;
@@ -19,15 +21,22 @@ export interface TmdbSearchResult {
   id: number;
   mediaType: MediaType;
   title: string;
+  originalTitle: string | null;
+  originalLanguage: string;
   posterPath: string | null;
   year: string | null;
   overview: string;
+  country: string | null;
+  director: string | null;
+  duration: string | null;
 }
 
 export interface WatchItemCreate {
   tmdbId: number;
   mediaType: MediaType;
   title: string;
+  originalTitle: string | null;
+  originalLanguage: string;
   posterPath: string | null;
   year: string | null;
   note: string;

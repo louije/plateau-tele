@@ -13,6 +13,8 @@ function rowToItem(row: typeof schema.watchItems.$inferSelect): WatchItem {
     tmdbId: row.tmdbId,
     mediaType: row.mediaType,
     title: row.title,
+    originalTitle: row.originalTitle,
+    originalLanguage: row.originalLanguage,
     posterPath: row.posterPath,
     year: row.year,
     note: row.note,
@@ -37,17 +39,27 @@ items.get("/", (c) => {
   return c.json(rows.map(rowToItem));
 });
 
-// POST /api/items — add a new item to the end of the list
+// POST /api/items — add a new item to the list
 items.post("/", async (c) => {
   const db = c.var.db;
-  const body = await c.req.json<WatchItemCreate>();
+  const body = await c.req.json<WatchItemCreate & { addToTop?: boolean }>();
 
-  // position = max existing position + 1, or 0 if empty
-  const maxRow = db
-    .select({ maxPos: sql<number>`coalesce(max(${schema.watchItems.position}), -1)` })
-    .from(schema.watchItems)
-    .get();
-  const position = (maxRow?.maxPos ?? -1) + 1;
+  let position: number;
+
+  if (body.addToTop) {
+    // Shift all unwatched items down by 1
+    db.update(schema.watchItems)
+      .set({ position: sql`${schema.watchItems.position} + 1` })
+      .where(eq(schema.watchItems.watched, false))
+      .run();
+    position = 0;
+  } else {
+    const maxRow = db
+      .select({ maxPos: sql<number>`coalesce(max(${schema.watchItems.position}), -1)` })
+      .from(schema.watchItems)
+      .get();
+    position = (maxRow?.maxPos ?? -1) + 1;
+  }
 
   const inserted = db
     .insert(schema.watchItems)
@@ -55,6 +67,8 @@ items.post("/", async (c) => {
       tmdbId: body.tmdbId,
       mediaType: body.mediaType,
       title: body.title,
+      originalTitle: body.originalTitle,
+      originalLanguage: body.originalLanguage,
       posterPath: body.posterPath,
       year: body.year,
       note: body.note,
@@ -65,6 +79,16 @@ items.post("/", async (c) => {
     .get();
 
   const item = rowToItem(inserted);
+
+  if (body.addToTop) {
+    const allItems = db
+      .select({ id: schema.watchItems.id, position: schema.watchItems.position })
+      .from(schema.watchItems)
+      .where(eq(schema.watchItems.watched, false))
+      .all();
+    broadcast({ type: "item:reordered", items: allItems });
+  }
+
   broadcast({ type: "item:added", item });
   return c.json(item, 201);
 });

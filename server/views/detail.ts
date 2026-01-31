@@ -1,0 +1,171 @@
+import { html, raw } from "hono/html";
+import type { HtmlEscapedString } from "hono/utils/html";
+import { layout } from "./layout.js";
+import { t } from "../../shared/i18n/index.js";
+import type { Locale } from "../../shared/i18n/index.js";
+import { posterUrl, profileUrl } from "../../shared/tmdb-image.js";
+import { displayTitle } from "../../client/lib/title.js";
+import type { MediaType } from "../../shared/types.js";
+
+interface CastMember {
+  name: string;
+  character: string;
+  profilePath: string | null;
+}
+
+interface ExistingItem {
+  id: number;
+  watched: boolean;
+}
+
+export interface DetailPageData {
+  tmdbData: Record<string, unknown>;
+  mediaType: MediaType;
+  tmdbId: number;
+  existingItem: ExistingItem | null;
+  locale: Locale;
+  searchQuery: string | null;
+}
+
+export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
+  const { tmdbData, mediaType, tmdbId, existingItem, locale } = data;
+
+  const title = (tmdbData.title || tmdbData.name || "Unknown") as string;
+  const originalTitle = (tmdbData.original_title || tmdbData.original_name || null) as string | null;
+  const originalLanguage = (tmdbData.original_language || "en") as string;
+  const overview = (tmdbData.overview || "") as string;
+  const pPath = (tmdbData.poster_path || null) as string | null;
+  const year = extractYear(tmdbData);
+  const runtime = formatRuntime(tmdbData, mediaType);
+  const country = ((tmdbData.origin_country as string[]) ?? [])[0] ?? null;
+  const director = extractDirector(tmdbData, mediaType);
+  const cast = extractCast(tmdbData);
+
+  const { primary, subtitle } = displayTitle(title, originalTitle, originalLanguage);
+  const pageTitle = `${primary}${year ? ` (${year})` : ""} — plateau-télé`;
+
+  const directorLabel = mediaType === "tv"
+    ? t(locale, "detail.creator")
+    : t(locale, "detail.director");
+
+  const meta = [
+    mediaType === "tv" ? t(locale, "watchItem.tv") : t(locale, "watchItem.movie"),
+    year,
+    country,
+    runtime,
+  ].filter(Boolean).join(" · ");
+
+  const { searchQuery } = data;
+  const qs = searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : "";
+  const backHref = searchQuery ? `/${qs}` : null;
+
+  const body = html`
+    <header>
+      <nav><a href="${backHref || "/"}" class="back-link">${searchQuery || t(locale, "detail.home")}</a></nav>
+    </header>
+
+    <main class="detail-page layout-wide">
+      <div class="detail-hero">
+        ${pPath
+          ? html`<img
+              class="detail-hero__poster"
+              src="${posterUrl(pPath, "w342")}"
+              alt=""
+              crossorigin="anonymous"
+              style="view-transition-name: poster-${String(tmdbId)}"
+            />`
+          : html`<div class="detail-hero__poster detail-hero__poster--empty"></div>`}
+        <div class="detail-hero__info">
+          <h2 class="detail-hero__title" style="view-transition-name: title-${String(tmdbId)}">${primary}</h2>
+          ${subtitle ? html`<p class="detail-hero__subtitle">${subtitle}</p>` : ""}
+          <p class="detail-hero__meta">${meta}</p>
+          ${director ? html`<p class="detail-hero__director">${directorLabel}${raw("&nbsp;: ")}${director}</p>` : ""}
+          ${renderCTA(data, qs)}
+        </div>
+      </div>
+
+      ${overview ? html`<p class="detail-overview">${overview}</p>` : ""}
+
+      ${cast.length > 0
+        ? html`
+          <section class="detail-cast">
+            <h3>${t(locale, "detail.cast")}</h3>
+            <ul class="cast-list">
+              ${cast.map(
+                (m) => html`
+                  <li class="cast-member">
+                    ${m.profilePath
+                      ? html`<img class="cast-member__photo" src="${profileUrl(m.profilePath)}" alt="" loading="lazy" />`
+                      : html`<div class="cast-member__photo cast-member__photo--empty"></div>`}
+                    <span class="cast-member__name">${m.name}</span>
+                    <span class="cast-member__role">${m.character}</span>
+                  </li>`,
+              )}
+            </ul>
+          </section>`
+        : ""}
+    </main>
+
+    <script type="module" src="/detail.js"></script>
+  `;
+
+  return layout(locale, pageTitle, body);
+}
+
+function renderCTA(data: DetailPageData, qs: string): HtmlEscapedString {
+  const { mediaType, tmdbId, existingItem, locale } = data;
+
+  if (existingItem && existingItem.watched) {
+    return html`<p class="cta-status cta-status--done">${t(locale, "detail.alreadyWatched")}</p>`;
+  }
+
+  if (existingItem) {
+    return html`
+      <form class="cta-form" data-action="/api/items/${String(existingItem.id)}" data-method="PATCH">
+        <button type="submit" class="btn-cta btn-cta--watched" name="watched" value="true">
+          ${t(locale, "detail.markWatched")}
+        </button>
+      </form>`;
+  }
+
+  return html`
+    <a href="${`/detail/${mediaType}/${String(tmdbId)}/add${qs}`}" class="btn-cta">
+      ${t(locale, "detail.addToList")}
+    </a>`;
+}
+
+export function extractYear(data: Record<string, unknown>): string | null {
+  const date = (data.release_date || data.first_air_date) as string | undefined;
+  return date ? date.slice(0, 4) : null;
+}
+
+export function formatRuntime(data: Record<string, unknown>, mediaType: MediaType): string | null {
+  const minutes = mediaType === "movie"
+    ? (data.runtime as number | null)
+    : ((data.episode_run_time as number[]) ?? [])[0];
+  if (!minutes) return null;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  if (h === 0) return `${m}min`;
+  return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+}
+
+function extractDirector(data: Record<string, unknown>, mediaType: MediaType): string | null {
+  if (mediaType === "movie") {
+    const credits = data.credits as { crew?: { job: string; name: string }[] } | undefined;
+    return credits?.crew?.find((c) => c.job === "Director")?.name ?? null;
+  }
+  const creators = data.created_by as { name: string }[] | undefined;
+  return creators?.[0]?.name ?? null;
+}
+
+function extractCast(data: Record<string, unknown>): CastMember[] {
+  const credits = data.credits as {
+    cast?: { name: string; character: string; profile_path: string | null; order: number }[];
+  } | undefined;
+  if (!credits?.cast) return [];
+  return credits.cast
+    .sort((a, b) => a.order - b.order)
+    .slice(0, 15)
+    .map((c) => ({ name: c.name, character: c.character, profilePath: c.profile_path }));
+}

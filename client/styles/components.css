@@ -95,21 +95,25 @@
   }
 
   .search-result {
+    & + & {
+      border-top: 1px solid var(--color-border);
+    }
+  }
+
+  .search-result__link {
     display: grid;
     grid-template-columns: 40px 1fr;
     gap: var(--space-sm);
     align-items: center;
     padding: var(--space-sm) var(--space-md);
+    text-decoration: none;
+    color: inherit;
     cursor: pointer;
     transition: background 0.1s;
 
     &:active,
     &:hover {
       background: color-mix(in srgb, var(--color-accent) 15%, transparent);
-    }
-
-    & + & {
-      border-top: 1px solid var(--color-border);
     }
   }
 
@@ -129,6 +133,11 @@
   .search-result__title {
     font-weight: 500;
     font-size: 0.9rem;
+  }
+
+  .search-result__subtitle {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
   }
 
   .search-result__meta {
@@ -195,6 +204,14 @@
     text-overflow: ellipsis;
   }
 
+  .watch-item__subtitle {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .watch-item__meta {
     font-size: 0.75rem;
     color: var(--color-text-muted);
@@ -250,101 +267,4 @@
     border-color: var(--color-danger);
   }
 
-  /* ---- Add form overlay ---- */
-  .add-form-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 50;
-    display: grid;
-    place-items: end center;
-    background: color-mix(in srgb, black 60%, transparent);
-    padding: var(--space-md);
-    padding-bottom: env(safe-area-inset-bottom, var(--space-md));
-  }
-
-  .add-form {
-    width: 100%;
-    max-width: 500px;
-    background: var(--color-surface-raised);
-    border-radius: var(--radius) var(--radius) 0 0;
-    padding: var(--space-lg);
-    display: grid;
-    gap: var(--space-md);
-    max-height: 80dvh;
-    overflow-y: auto;
-  }
-
-  .add-form__poster {
-    width: 80px;
-    aspect-ratio: var(--poster-ratio);
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    justify-self: center;
-  }
-
-  .add-form__title {
-    font-size: 1.1rem;
-    text-align: center;
-  }
-
-  .add-form__overview {
-    font-size: 0.8rem;
-    color: var(--color-text-muted);
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  .add-form label {
-    display: grid;
-    gap: var(--space-xs);
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  .add-form textarea,
-  .add-form input[type="text"] {
-    padding: var(--space-sm);
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    color: var(--color-text);
-    resize: vertical;
-
-    &:focus {
-      outline: none;
-      border-color: var(--color-accent);
-    }
-  }
-
-  .add-form__buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--space-sm);
-  }
-
-  .add-form button[type="submit"] {
-    padding: var(--space-sm) var(--space-md);
-    background: var(--color-accent);
-    color: white;
-    border: none;
-    border-radius: var(--radius-sm);
-    font-weight: 600;
-    cursor: pointer;
-
-    &:active {
-      background: var(--color-accent-dim);
-    }
-  }
-
-  .btn-cancel {
-    padding: var(--space-sm) var(--space-md);
-    background: transparent;
-    color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-  }
 }

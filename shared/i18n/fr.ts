@@ -1,0 +1,29 @@
+import type en from "./en.js";
+
+const fr: typeof en = {
+  "search.placeholder": "Rechercher un film ou une série…",
+  "search.ariaLabel": "Rechercher films et séries",
+  "search.cancel": "Annuler",
+  "watchList.empty": "Rien pour l'instant — cherchez pour ajouter quelque chose.",
+  "watchItem.markWatched": "Marquer comme regardé",
+  "watchItem.remove": "Supprimer",
+  "watchItem.tv": "Série",
+  "watchItem.movie": "Film",
+  "detail.back": "Retour",
+  "detail.home": "Accueil",
+  "detail.addToList": "Ajouter à la liste",
+  "detail.addToTop": "Ajouter en haut",
+  "detail.markWatched": "Marquer comme regardé",
+  "detail.alreadyWatched": "Déjà regardé",
+  "detail.inList": "Déjà dans la liste",
+  "detail.noteLabel": "Pourquoi on regarderait ça ?",
+  "detail.notePlaceholder": "Recommandé par…",
+  "detail.addedByLabel": "Ajouté par",
+  "detail.addedByPlaceholder": "Prénom",
+  "detail.director": "Réalisateur",
+  "detail.creator": "Créateur",
+  "detail.cast": "Distribution",
+  "addModal.emptyWarning": "Pas de raison ? Appuyez encore pour ajouter.",
+} as const;
+
+export default fr;

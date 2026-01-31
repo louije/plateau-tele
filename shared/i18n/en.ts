@@ -1,0 +1,27 @@
+const en = {
+  "search.placeholder": "Search movies & shows…",
+  "search.ariaLabel": "Search movies and shows",
+  "search.cancel": "Cancel",
+  "watchList.empty": "Nothing yet — search to add something.",
+  "watchItem.markWatched": "Mark as watched",
+  "watchItem.remove": "Remove",
+  "watchItem.tv": "TV",
+  "watchItem.movie": "Movie",
+  "detail.back": "Back",
+  "detail.home": "Home",
+  "detail.addToList": "Add to list",
+  "detail.addToTop": "Add to top of list",
+  "detail.markWatched": "Mark as watched",
+  "detail.alreadyWatched": "Already watched",
+  "detail.inList": "Already in your list",
+  "detail.noteLabel": "Why are we watching this?",
+  "detail.notePlaceholder": "Jamie said it's incredible…",
+  "detail.addedByLabel": "Added by",
+  "detail.addedByPlaceholder": "Your name",
+  "detail.director": "Director",
+  "detail.creator": "Creator",
+  "detail.cast": "Cast",
+  "addModal.emptyWarning": "No reason? Press again to add anyway.",
+} as const;
+
+export default en;

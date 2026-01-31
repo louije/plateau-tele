@@ -7,10 +7,11 @@ const watch = process.argv.includes("--watch");
 cpSync("client/index.html", "dist/public/index.html");
 cpSync("client/styles", "dist/public/styles", { recursive: true });
 cpSync("client/styles.css", "dist/public/styles.css");
+cpSync("client/icons", "dist/public/icons", { recursive: true });
 
 /** @type {esbuild.BuildOptions} */
 const config = {
-  entryPoints: ["client/main.ts"],
+  entryPoints: ["client/main.ts", "client/detail.ts"],
   bundle: true,
   outdir: "dist/public",
   format: "esm",

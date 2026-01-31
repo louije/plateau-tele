@@ -6,6 +6,9 @@ import {
 } from "../services/api.js";
 import { subscribe } from "../services/events.js";
 import { posterUrl } from "../lib/tmdb-image.js";
+import { displayTitle } from "../lib/title.js";
+import { t } from "../i18n/index.js";
+import { applyAccentFromImage } from "../lib/accent-color.js";
 import type { WatchItem, SSEEvent, ReorderPayload } from "../../shared/types.js";
 
 export class WatchList extends HTMLElement {
@@ -30,7 +33,7 @@ export class WatchList extends HTMLElement {
     this.list.innerHTML = "";
 
     if (this.items.length === 0) {
-      this.list.innerHTML = `<li class="watch-list__empty">Nothing yet — search to add something.</li>`;
+      this.list.innerHTML = `<li class="watch-list__empty">${t("watchList.empty")}</li>`;
       return;
     }
 
@@ -42,15 +45,19 @@ export class WatchList extends HTMLElement {
       li.dataset.id = String(item.id);
 
       const img = li.querySelector(".watch-item__poster") as HTMLImageElement;
-      const title = li.querySelector(".watch-item__title")!;
+      const titleEl = li.querySelector(".watch-item__title")!;
+      const subtitleEl = li.querySelector(".watch-item__subtitle")!;
       const meta = li.querySelector(".watch-item__meta")!;
       const note = li.querySelector(".watch-item__note")!;
 
       const src = posterUrl(item.posterPath);
       if (src) img.src = src;
-      title.textContent = item.title;
+      const { primary, subtitle } = displayTitle(item.title, item.originalTitle, item.originalLanguage);
+      titleEl.textContent = primary;
+      if (subtitle) subtitleEl.textContent = subtitle;
+      else subtitleEl.remove();
       meta.textContent = [
-        item.mediaType === "tv" ? "TV" : "Movie",
+        item.mediaType === "tv" ? t("watchItem.tv") : t("watchItem.movie"),
         item.year,
         item.addedBy,
       ]
@@ -59,12 +66,16 @@ export class WatchList extends HTMLElement {
       note.textContent = item.note || "";
 
       // Watched button
-      li.querySelector(".btn-watched")!.addEventListener("click", () => {
+      const btnWatched = li.querySelector(".btn-watched")!;
+      btnWatched.setAttribute("aria-label", t("watchItem.markWatched"));
+      btnWatched.addEventListener("click", () => {
         updateItem(item.id, { watched: true });
       });
 
       // Remove button
-      li.querySelector(".btn-remove")!.addEventListener("click", () => {
+      const btnRemove = li.querySelector(".btn-remove")!;
+      btnRemove.setAttribute("aria-label", t("watchItem.remove"));
+      btnRemove.addEventListener("click", () => {
         removeItem(item.id);
       });
 
@@ -90,6 +101,10 @@ export class WatchList extends HTMLElement {
 
       this.list.appendChild(frag);
     }
+
+    // Accent from first item's poster
+    const firstPoster = this.list.querySelector<HTMLImageElement>(".watch-item__poster");
+    if (firstPoster) applyAccentFromImage(firstPoster);
   }
 
   // ---- SSE handlers ----
