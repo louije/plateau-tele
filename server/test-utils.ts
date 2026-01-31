@@ -1,6 +1,6 @@
-import Database from "better-sqlite3";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import { migrate } from "drizzle-orm/better-sqlite3/migrator";
+import { Database } from "bun:sqlite";
+import { drizzle } from "drizzle-orm/bun-sqlite";
+import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import * as schema from "./db/schema.js";
 import type { DbInstance } from "./app.js";
 
@@ -10,8 +10,8 @@ import type { DbInstance } from "./app.js";
  */
 export function createTestDb(): { db: DbInstance; close: () => void } {
   const sqlite = new Database(":memory:");
-  sqlite.pragma("journal_mode = WAL");
-  sqlite.pragma("foreign_keys = ON");
+  sqlite.exec("PRAGMA journal_mode = WAL");
+  sqlite.exec("PRAGMA foreign_keys = ON");
   const testDb = drizzle(sqlite, { schema });
   migrate(testDb, { migrationsFolder: "./drizzle" });
   return { db: testDb, close: () => sqlite.close() };

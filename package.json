@@ -4,29 +4,25 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"node --watch dist/server/index.js\" \"node esbuild.config.js --watch\" \"npx tsc --watch --noEmit\"",
-    "build:server": "tsc -p tsconfig.server.json",
-    "build:client": "node esbuild.config.js",
-    "build": "npm run build:server && npm run build:client",
-    "start": "node dist/server/index.js",
+    "dev": "concurrently \"bun --watch server/index.ts\" \"bun esbuild.config.js --watch\"",
+    "build:client": "bun esbuild.config.js",
+    "build": "bun run build:client",
+    "start": "bun server/index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "bun test",
+    "test:watch": "bun test --watch"
   },
   "dependencies": {
-    "@hono/node-server": "^1.13.0",
-    "better-sqlite3": "^11.7.0",
     "drizzle-orm": "^0.38.0",
     "hono": "^4.6.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.12",
+    "@types/bun": "latest",
     "@types/node": "^22.10.0",
     "concurrently": "^9.1.0",
     "drizzle-kit": "^0.30.0",
     "esbuild": "^0.24.0",
-    "typescript": "^5.7.0",
-    "vitest": "^4.0.18"
+    "typescript": "^5.7.0"
   }
 }

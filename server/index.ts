@@ -1,6 +1,5 @@
-import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
+import { serveStatic } from "hono/bun";
 import { createApp } from "./app.js";
 import { db, runMigrations } from "./db/index.js";
 
@@ -21,6 +20,9 @@ server.get("/*", serveStatic({ root: "./dist/public", path: "index.html" }));
 
 const port = Number(process.env.PORT) || 3000;
 
-serve({ fetch: server.fetch, port }, () => {
-  console.log(`plateau-télé running on http://localhost:${port}`);
-});
+export default {
+  port,
+  fetch: server.fetch,
+};
+
+console.log(`plateau-télé running on http://localhost:${port}`);

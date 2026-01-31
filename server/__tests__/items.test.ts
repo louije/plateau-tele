@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { createApp } from "../app.js";
 import { createTestDb } from "../test-utils.js";
 import type { DbInstance } from "../app.js";

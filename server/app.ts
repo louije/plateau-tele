@@ -1,12 +1,12 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import type * as schema from "./db/schema.js";
 import { items } from "./routes/items.js";
 import { search } from "./routes/search.js";
 import { events } from "./routes/events.js";
 
-export type DbInstance = BetterSQLite3Database<typeof schema>;
+export type DbInstance = BunSQLiteDatabase<typeof schema>;
 
 export type AppEnv = {
   Variables: {

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, mock, beforeEach, afterEach } from "bun:test";
 import { createApp } from "../app.js";
 import { createTestDb } from "../test-utils.js";
 import type { DbInstance } from "../app.js";
@@ -6,15 +6,17 @@ import type { DbInstance } from "../app.js";
 let db: DbInstance;
 let close: () => void;
 let app: ReturnType<typeof createApp>;
+let originalFetch: typeof globalThis.fetch;
 
 beforeEach(() => {
   ({ db, close } = createTestDb());
   app = createApp(db);
+  originalFetch = globalThis.fetch;
 });
 
 afterEach(() => {
   close();
-  vi.restoreAllMocks();
+  globalThis.fetch = originalFetch;
 });
 
 const tmdbMultiResponse = {
@@ -68,13 +70,13 @@ describe("GET /api/search", () => {
   it("proxies TMDB search and filters results", async () => {
     process.env.TMDB_API_KEY = "test-key";
 
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(tmdbMultiResponse),
-      }),
-    );
+    globalThis.fetch = mock(() =>
+      Promise.resolve(
+        new Response(JSON.stringify(tmdbMultiResponse), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as typeof fetch;
 
     const res = await app.request("/api/search?q=fight");
     expect(res.status).toBe(200);
@@ -103,15 +105,18 @@ describe("GET /api/search", () => {
   it("uses TMDB API key in request URL", async () => {
     process.env.TMDB_API_KEY = "my-secret-key";
 
-    const mockFetch = vi.fn().mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ results: [] }),
-    });
-    vi.stubGlobal("fetch", mockFetch);
+    const mockFetch = mock(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ results: [] }), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    );
+    globalThis.fetch = mockFetch as typeof fetch;
 
     await app.request("/api/search?q=matrix");
 
-    expect(mockFetch).toHaveBeenCalledOnce();
+    expect(mockFetch).toHaveBeenCalledTimes(1);
     const calledUrl = mockFetch.mock.calls[0]![0] as string;
     expect(calledUrl).toContain("api_key=my-secret-key");
     expect(calledUrl).toContain("query=matrix");
@@ -135,13 +140,13 @@ describe("GET /api/search/details/:type/:id", () => {
     process.env.TMDB_API_KEY = "test-key";
 
     const details = { id: 550, title: "Fight Club", runtime: 139 };
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(details),
-      }),
-    );
+    globalThis.fetch = mock(() =>
+      Promise.resolve(
+        new Response(JSON.stringify(details), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as typeof fetch;
 
     const res = await app.request("/api/search/details/movie/550");
     expect(res.status).toBe(200);
@@ -153,13 +158,13 @@ describe("GET /api/search/details/:type/:id", () => {
     process.env.TMDB_API_KEY = "test-key";
 
     const details = { id: 1396, name: "Breaking Bad", number_of_seasons: 5 };
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: () => Promise.resolve(details),
-      }),
-    );
+    globalThis.fetch = mock(() =>
+      Promise.resolve(
+        new Response(JSON.stringify(details), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      ),
+    ) as typeof fetch;
 
     const res = await app.request("/api/search/details/tv/1396");
     expect(res.status).toBe(200);
@@ -170,13 +175,9 @@ describe("GET /api/search/details/:type/:id", () => {
   it("returns 404 when TMDB returns error", async () => {
     process.env.TMDB_API_KEY = "test-key";
 
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404,
-      }),
-    );
+    globalThis.fetch = mock(() =>
+      Promise.resolve(new Response(null, { status: 404 })),
+    ) as typeof fetch;
 
     const res = await app.request("/api/search/details/movie/0");
     expect(res.status).toBe(404);

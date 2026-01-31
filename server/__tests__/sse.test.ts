@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { addClient, removeClient, broadcast } from "../sse.js";
 import type { SSEEvent } from "../../shared/types.js";
 
