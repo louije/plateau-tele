@@ -29,5 +29,10 @@ export function createApp(db: DbInstance) {
   app.route("/api/search", search);
   app.route("/api/events", events);
 
+  app.onError((err, c) => {
+    console.error(err.message);
+    return c.json({ error: "internal server error" }, 500);
+  });
+
   return app;
 }
