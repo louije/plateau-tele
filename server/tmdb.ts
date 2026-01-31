@@ -17,6 +17,7 @@ interface TmdbMultiResult {
   release_date?: string;
   first_air_date?: string;
   overview?: string;
+  popularity?: number;
 }
 
 export async function searchMulti(
@@ -29,6 +30,7 @@ export async function searchMulti(
 
   return data.results
     .filter((r) => r.media_type === "movie" || r.media_type === "tv")
+    .sort((a, b) => (b.popularity ?? 0) - (a.popularity ?? 0))
     .slice(0, 8)
     .map((r) => ({
       id: r.id,
