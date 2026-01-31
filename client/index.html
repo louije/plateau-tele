@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>plateau-télé</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/main.js"></script>
+  </head>
+  <body>
+    <header>
+      <h1>plateau-télé</h1>
+    </header>
+
+    <main>
+      <search-bar></search-bar>
+      <watch-list></watch-list>
+    </main>
+
+    <!-- Templates -->
+
+    <template id="search-result-tpl">
+      <li class="search-result" role="option">
+        <img class="search-result__poster" alt="" loading="lazy" />
+        <div class="search-result__info">
+          <span class="search-result__title"></span>
+          <span class="search-result__meta"></span>
+        </div>
+      </li>
+    </template>
+
+    <template id="watch-item-tpl">
+      <li class="watch-item" draggable="true">
+        <img class="watch-item__poster" alt="" loading="lazy" />
+        <div class="watch-item__body">
+          <strong class="watch-item__title"></strong>
+          <span class="watch-item__meta"></span>
+          <p class="watch-item__note"></p>
+        </div>
+        <div class="watch-item__actions">
+          <button class="btn-icon btn-watched" aria-label="Mark as watched">✓</button>
+          <button class="btn-icon btn-remove" aria-label="Remove">×</button>
+        </div>
+      </li>
+    </template>
+
+    <template id="add-form-tpl">
+      <div class="add-form-overlay" role="dialog" aria-label="Add to list">
+        <form class="add-form">
+          <img class="add-form__poster" alt="" />
+          <h2 class="add-form__title"></h2>
+          <p class="add-form__overview"></p>
+          <label>
+            <span>Why are we watching this?</span>
+            <textarea name="note" rows="2" required placeholder="Jamie said it's incredible..."></textarea>
+          </label>
+          <label>
+            <span>Added by</span>
+            <input name="addedBy" type="text" required placeholder="Your name" />
+          </label>
+          <div class="add-form__buttons">
+            <button type="submit">Add to list</button>
+            <button type="button" class="btn-cancel">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </template>
+  </body>
+</html>

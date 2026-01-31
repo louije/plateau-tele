@@ -1,0 +1,66 @@
+@layer reset, base, layout, components;
+
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+  }
+
+  body {
+    min-height: 100dvh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
+
+  input,
+  button,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer base {
+  :root {
+    --color-bg: #0f0f0f;
+    --color-surface: #1a1a1a;
+    --color-surface-raised: #252525;
+    --color-border: #333;
+    --color-text: #e8e8e8;
+    --color-text-muted: #888;
+    --color-accent: #e07b4c;
+    --color-accent-dim: #c06030;
+    --color-danger: #c0392b;
+    --color-success: #27ae60;
+
+    --radius: 8px;
+    --radius-sm: 4px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+
+    --poster-width: 56px;
+    --poster-ratio: 2 / 3;
+
+    color-scheme: dark;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
+    background: var(--color-bg);
+    color: var(--color-text);
+    line-height: 1.4;
+  }
+
+  a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+}
