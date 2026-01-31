@@ -12,5 +12,5 @@ export function t(locale: Locale, key: TranslationKey): string {
 
 export function resolveLocale(langHint: string): Locale {
   const lang = langHint.slice(0, 2);
-  return lang in locales ? (lang as Locale) : "en";
+  return lang in locales ? (lang as Locale) : "fr";
 }
