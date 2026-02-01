@@ -4,9 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"bun --watch server/index.ts\" \"bun esbuild.config.js --watch\"",
-    "build:client": "bun esbuild.config.js",
-    "build": "bun run build:client",
+    "dev": "bun --watch server/index.ts",
     "start": "bun server/index.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -22,9 +20,7 @@
     "@types/bun": "latest",
     "@types/node": "^22.10.0",
     "@types/sortablejs": "^1.15.9",
-    "concurrently": "^9.1.0",
     "drizzle-kit": "^0.30.0",
-    "esbuild": "^0.24.0",
     "typescript": "^5.7.0"
   }
 }

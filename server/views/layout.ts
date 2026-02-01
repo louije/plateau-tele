@@ -19,6 +19,7 @@ export function layout(
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <link rel="stylesheet" href="/styles.css" />
+    <script type="importmap">{"imports":{"sortablejs":"/vendor/sortable.esm.js"}}</script>
   </head>
   <body>
     ${body}

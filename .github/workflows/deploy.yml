@@ -29,7 +29,6 @@ jobs:
           rsync -avz --delete \
             --exclude='.git' \
             --exclude='node_modules' \
-            --exclude='dist' \
             --exclude='.DS_Store' \
             --exclude='data/' \
             --exclude='.env' \
