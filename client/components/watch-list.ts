@@ -42,6 +42,9 @@ export class WatchList extends HTMLElement {
       const li = frag.querySelector(".watch-item") as HTMLLIElement;
       li.dataset.id = String(item.id);
 
+      const link = li.querySelector(".watch-item__link") as HTMLAnchorElement;
+      link.href = `/detail/${item.mediaType}/${item.tmdbId}`;
+
       const img = li.querySelector(".watch-item__poster") as HTMLImageElement;
       const titleEl = li.querySelector(".watch-item__title")!;
       const subtitleEl = li.querySelector(".watch-item__subtitle")!;
@@ -71,8 +74,12 @@ export class WatchList extends HTMLElement {
         directorEl.remove();
       }
       note.textContent = item.note || "";
-      if (item.addedBy) addedByEl.textContent = item.addedBy;
-      else addedByEl.remove();
+      if (item.addedBy) {
+        addedByEl.textContent = item.addedBy;
+        addedByEl.style.setProperty("--pill-hue", String(hashHue(item.addedBy)));
+      } else {
+        addedByEl.remove();
+      }
 
       // Drag events for reordering
       li.addEventListener("dragstart", (e) => this.onDragStart(e, item.id));
@@ -84,11 +91,6 @@ export class WatchList extends HTMLElement {
 
       // Touch-based reorder (long press)
       this.setupTouchDrag(li, item.id);
-
-      // Tap to open detail page
-      li.querySelector(".watch-item__body")!.addEventListener("click", () => {
-        window.location.href = `/detail/${item.mediaType}/${item.tmdbId}`;
-      });
 
       this.list.appendChild(frag);
     }
@@ -264,6 +266,14 @@ export class WatchList extends HTMLElement {
     this.render();
     reorderItems(payload);
   }
+}
+
+function hashHue(name: string): number {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) {
+    h = Math.imul(31, h) + name.charCodeAt(i);
+  }
+  return ((h % 360) + 360) % 360;
 }
 
 customElements.define("watch-list", WatchList);
