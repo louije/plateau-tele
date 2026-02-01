@@ -21,6 +21,9 @@ const en = {
   "detail.director": "Director",
   "detail.creator": "Creator",
   "detail.cast": "Cast",
+  "detail.removeFromList": "Remove from list",
+  "detail.watchedConfirm": "Watched?",
+  "detail.removeConfirm": "Remove?",
   "addModal.emptyWarning": "No reason? Press again to add anyway.",
 } as const;
 

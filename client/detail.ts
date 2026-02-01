@@ -11,18 +11,46 @@ if (addedByInput) {
   if (lastUser) addedByInput.value = lastUser;
 }
 
-// Mark-watched form (detail page)
-document.querySelectorAll<HTMLFormElement>(".cta-form").forEach((form) => {
+// CTA forms (mark-watched / remove) — two-step confirm
+const ctaForms = document.querySelectorAll<HTMLFormElement>(".cta-form");
+
+function resetCta(form: HTMLFormElement) {
+  const btn = form.querySelector("button")!;
+  if (btn.dataset.originalText) {
+    btn.textContent = btn.dataset.originalText;
+    delete btn.dataset.originalText;
+  }
+}
+
+ctaForms.forEach((form) => {
+  let confirmed = false;
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const button = form.querySelector("button")!;
+
+    if (!confirmed) {
+      confirmed = true;
+      // Reset other CTA buttons
+      ctaForms.forEach((f) => { if (f !== form) resetCta(f); });
+      // Lock width then swap text
+      button.dataset.originalText = button.textContent!.trim();
+      button.style.minWidth = `${button.offsetWidth}px`;
+      button.textContent = button.dataset.confirm || "?";
+      return;
+    }
+
     const action = form.dataset.action || "";
+    const method = form.dataset.method || "PATCH";
     form.querySelectorAll("button").forEach((b) => (b.disabled = true));
 
-    await fetch(action, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ watched: true }),
-    });
+    const options: RequestInit = { method };
+    if (method === "PATCH") {
+      options.headers = { "Content-Type": "application/json" };
+      options.body = JSON.stringify({ watched: true });
+    }
+
+    await fetch(action, options);
     window.location.href = "/";
   });
 });
@@ -42,7 +70,7 @@ if (addForm) {
 
     if (!note && !warnedOnce) {
       warnedOnce = true;
-      if (warning) warning.hidden = false;
+      if (warning) warning.classList.add("is-visible");
       return;
     }
 
@@ -59,6 +87,9 @@ if (addForm) {
       year: fd.get("year") || null,
       note,
       addedBy,
+      director: fd.get("director") || null,
+      country: fd.get("country") || null,
+      duration: fd.get("duration") || null,
     };
 
     if (button.dataset.position === "top") {

@@ -23,6 +23,9 @@ const fr: typeof en = {
   "detail.director": "Réalisateur",
   "detail.creator": "Créateur",
   "detail.cast": "Distribution",
+  "detail.removeFromList": "Retirer de la liste",
+  "detail.watchedConfirm": "Regardé ?",
+  "detail.removeConfirm": "Retirer ?",
   "addModal.emptyWarning": "Pas de raison ? Appuyez encore pour ajouter.",
 } as const;
 

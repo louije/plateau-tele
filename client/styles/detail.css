@@ -79,7 +79,8 @@
 
   .detail-hero__info .btn-cta,
   .detail-hero__info .cta-form,
-  .detail-hero__info .cta-status {
+  .detail-hero__info .cta-status,
+  .detail-hero__info .cta-buttons {
     margin-top: var(--space-xs);
   }
 
@@ -138,6 +139,22 @@
 
   .btn-cta--secondary:active {
     background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+
+  .cta-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .btn-cta--danger {
+    background: transparent;
+    color: var(--color-danger);
+    border: 1px solid var(--color-danger);
+  }
+
+  .btn-cta--danger:active {
+    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
   }
 
   .btn-cta--watched {
@@ -244,6 +261,9 @@
   .add-form {
     display: grid;
     gap: var(--space-md);
+    max-width: 480px;
+    margin-inline: auto;
+    width: 100%;
   }
 
   .add-form label {
@@ -274,16 +294,17 @@
     font-size: 0.85rem;
     color: var(--color-accent);
     margin: 0;
+    visibility: hidden;
+  }
+
+  .add-form__warning.is-visible {
+    visibility: visible;
   }
 
   .add-form__buttons {
     display: flex;
     flex-direction: column;
     gap: var(--space-sm);
-  }
-
-  .add-form__buttons .btn-cta {
-    flex: 1;
   }
 
   @media (min-width: 480px) {
