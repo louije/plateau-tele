@@ -106,7 +106,7 @@
   .btn-cta {
     padding: var(--space-sm) var(--space-md);
     background: var(--color-accent);
-    color: white;
+    color: var(--color-accent-text, white);
     border: none;
     border-radius: 999px;
     font-weight: 600;
@@ -149,20 +149,21 @@
 
   .btn-cta--danger {
     background: transparent;
-    color: var(--color-danger);
-    border: 1px solid var(--color-danger);
+    color: var(--color-accent);
+    border: 1px solid var(--color-accent);
   }
 
   .btn-cta--danger:active {
-    background: color-mix(in srgb, var(--color-danger) 10%, transparent);
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
   }
 
   .btn-cta--watched {
-    background: var(--color-success);
+    background: var(--color-accent);
+    color: var(--color-accent-text, white);
   }
 
   .btn-cta--watched:active {
-    background: color-mix(in srgb, var(--color-success) 80%, black);
+    background: color-mix(in srgb, var(--color-accent) 80%, black);
   }
 
   /* ---- Cast list ---- */
@@ -313,8 +314,6 @@
   }
 
   .toggle-group label {
-    flex: 1;
-    text-align: center;
     padding: var(--space-sm) var(--space-md);
     font-size: 0.9rem;
     font-weight: 500;
@@ -340,7 +339,7 @@
   .toggle-group input[type="radio"]:checked + label {
     background: var(--color-accent);
     border-color: var(--color-accent);
-    color: white;
+    color: var(--color-accent-text, white);
   }
 
   .add-form__warning {
