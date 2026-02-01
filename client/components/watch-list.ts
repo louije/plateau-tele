@@ -2,6 +2,7 @@ import Sortable from "sortablejs";
 import {
   fetchItems,
   reorderItems,
+  fetchJellyfinStatuses,
 } from "../services/api.js";
 import { subscribe } from "../services/events.js";
 import { posterUrl } from "../lib/tmdb-image.js";
@@ -26,6 +27,31 @@ export class WatchList extends HTMLElement {
   private async load() {
     this.items = await fetchItems();
     this.render();
+    this.loadJellyfinStatuses();
+  }
+
+  private async loadJellyfinStatuses() {
+    if (this.items.length === 0) return;
+    try {
+      const statuses = await fetchJellyfinStatuses(
+        this.items.map((i) => ({ tmdbId: i.tmdbId, mediaType: i.mediaType })),
+      );
+      for (const { tmdbId, status } of statuses) {
+        if (status === "unavailable") continue;
+        const item = this.items.find((i) => i.tmdbId === tmdbId);
+        if (!item) continue;
+        const li = this.list.querySelector(`[data-id="${item.id}"]`);
+        const badge = li?.querySelector(".watch-item__jellyfin");
+        if (badge) {
+          badge.textContent = status === "available"
+            ? t("detail.availableOnJellyfin")
+            : t("detail.requested");
+          badge.classList.add(`watch-item__jellyfin--${status}`);
+        }
+      }
+    } catch {
+      // Jellyseerr unavailable — fail silently
+    }
   }
 
   private render() {

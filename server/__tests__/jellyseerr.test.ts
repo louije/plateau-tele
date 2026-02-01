@@ -121,3 +121,106 @@ describe("POST /api/jellyseerr/request", () => {
     expect(res.status).toBe(502);
   });
 });
+
+describe("POST /api/jellyseerr/batch-status", () => {
+  it("returns statuses for multiple items", async () => {
+    globalThis.fetch = mock((input: string | URL | Request) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/movie/550")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ mediaInfo: { status: 5 } }), {
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
+      if (url.includes("/tv/1396")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({}), {
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
+      return Promise.resolve(new Response(null, { status: 404 }));
+    }) as typeof fetch;
+
+    const res = await app.request("/api/jellyseerr/batch-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: [
+          { tmdbId: 550, mediaType: "movie" },
+          { tmdbId: 1396, mediaType: "tv" },
+        ],
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { tmdbId: number; status: string }[];
+    expect(json).toHaveLength(2);
+    expect(json[0]).toEqual({ tmdbId: 550, mediaType: "movie", status: "available" });
+    expect(json[1]).toEqual({ tmdbId: 1396, mediaType: "tv", status: "unavailable" });
+  });
+
+  it("maps Jellyseerr status 2 to requested", async () => {
+    globalThis.fetch = mock(() => {
+      return Promise.resolve(
+        new Response(JSON.stringify({ mediaInfo: { status: 2 } }), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const res = await app.request("/api/jellyseerr/batch-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: [{ tmdbId: 550, mediaType: "movie" }] }),
+    });
+
+    const json = (await res.json()) as { status: string }[];
+    expect(json[0]!.status).toBe("requested");
+  });
+
+  it("maps Jellyseerr status 3 to processing", async () => {
+    globalThis.fetch = mock(() => {
+      return Promise.resolve(
+        new Response(JSON.stringify({ mediaInfo: { status: 3 } }), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const res = await app.request("/api/jellyseerr/batch-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: [{ tmdbId: 550, mediaType: "movie" }] }),
+    });
+
+    const json = (await res.json()) as { status: string }[];
+    expect(json[0]!.status).toBe("processing");
+  });
+
+  it("returns 400 for empty items", async () => {
+    const res = await app.request("/api/jellyseerr/batch-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: [] }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("returns unavailable when Jellyseerr is unreachable", async () => {
+    globalThis.fetch = mock(() => {
+      return Promise.reject(new Error("ECONNREFUSED"));
+    }) as typeof fetch;
+
+    const res = await app.request("/api/jellyseerr/batch-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: [{ tmdbId: 550, mediaType: "movie" }] }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { status: string }[];
+    expect(json[0]!.status).toBe("unavailable");
+  });
+});

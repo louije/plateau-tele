@@ -282,6 +282,24 @@
     color: var(--color-text-muted);
   }
 
+  .watch-item__jellyfin {
+    font-size: 0.7rem;
+    font-weight: 500;
+    display: none;
+  }
+
+  .watch-item__jellyfin--available {
+    display: inline;
+    color: var(--color-success);
+  }
+
+  .watch-item__jellyfin--requested,
+  .watch-item__jellyfin--processing {
+    display: inline;
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
   .watch-item__note {
     font-size: 0.8rem;
     color: var(--color-text-muted);

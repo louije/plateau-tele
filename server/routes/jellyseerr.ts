@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { requestMedia } from "../jellyseerr.js";
+import { requestMedia, getMediaAvailability } from "../jellyseerr.js";
 import type { AppEnv } from "../app.js";
 import type { MediaType } from "../../shared/types.js";
 
@@ -20,6 +20,23 @@ jellyseerr.post("/request", async (c) => {
     return c.json({ error: result.error }, 502);
   }
   return c.json({ ok: true });
+});
+
+jellyseerr.post("/batch-status", async (c) => {
+  const body = await c.req.json<{ items: { tmdbId: number; mediaType: MediaType }[] }>();
+
+  if (!Array.isArray(body.items) || body.items.length === 0) {
+    return c.json({ error: "items array required" }, 400);
+  }
+
+  const results = await Promise.all(
+    body.items.map(async ({ tmdbId, mediaType }) => {
+      const { status } = await getMediaAvailability(tmdbId, mediaType);
+      return { tmdbId, mediaType, status };
+    }),
+  );
+
+  return c.json(results);
 });
 
 export { jellyseerr };

@@ -51,3 +51,18 @@ export function reorderItems(payload: ReorderPayload[]): Promise<void> {
 export function searchTmdb(query: string): Promise<TmdbSearchResult[]> {
   return request(`/search?q=${encodeURIComponent(query)}`);
 }
+
+export interface JellyfinStatus {
+  tmdbId: number;
+  mediaType: string;
+  status: "available" | "requested" | "processing" | "unavailable";
+}
+
+export function fetchJellyfinStatuses(
+  items: { tmdbId: number; mediaType: string }[],
+): Promise<JellyfinStatus[]> {
+  return request("/jellyseerr/batch-status", {
+    method: "POST",
+    body: JSON.stringify({ items }),
+  });
+}
