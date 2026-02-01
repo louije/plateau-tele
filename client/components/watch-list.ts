@@ -1,3 +1,4 @@
+import Sortable from "sortablejs";
 import {
   fetchItems,
   reorderItems,
@@ -12,7 +13,7 @@ import type { WatchItem, SSEEvent, ReorderPayload } from "../../shared/types.js"
 export class WatchList extends HTMLElement {
   private list!: HTMLUListElement;
   private items: WatchItem[] = [];
-  private dragSrcId: number | null = null;
+  private sortable: Sortable | null = null;
 
   connectedCallback() {
     this.innerHTML = `<ul class="watch-list"></ul>`;
@@ -28,6 +29,8 @@ export class WatchList extends HTMLElement {
   }
 
   private render() {
+    this.sortable?.destroy();
+    this.sortable = null;
     this.list.innerHTML = "";
 
     if (this.items.length === 0) {
@@ -81,23 +84,47 @@ export class WatchList extends HTMLElement {
         addedByEl.remove();
       }
 
-      // Drag events for reordering
-      li.addEventListener("dragstart", (e) => this.onDragStart(e, item.id));
-      li.addEventListener("dragover", (e) => this.onDragOver(e));
-      li.addEventListener("dragenter", (e) => this.onDragEnter(e));
-      li.addEventListener("dragleave", (e) => this.onDragLeave(e));
-      li.addEventListener("drop", (e) => this.onDrop(e));
-      li.addEventListener("dragend", () => this.onDragEnd());
-
-      // Touch-based reorder (long press)
-      this.setupTouchDrag(li, item.id);
-
       this.list.appendChild(frag);
     }
+
+    this.initSortable();
 
     // Accent from first item's poster
     const firstPoster = this.list.querySelector<HTMLImageElement>(".watch-item__poster");
     if (firstPoster) applyAccentFromImage(firstPoster);
+  }
+
+  private initSortable() {
+    this.sortable = Sortable.create(this.list, {
+      animation: 200,
+      delay: 300,
+      delayOnTouchOnly: true,
+      draggable: ".watch-item",
+      ghostClass: "watch-item--ghost",
+      chosenClass: "watch-item--chosen",
+      dragClass: "watch-item--drag",
+      filter: ".watch-item__added-by",
+      preventOnFilter: false,
+      onEnd: (evt) => {
+        const { oldIndex, newIndex } = evt;
+        if (oldIndex == null || newIndex == null || oldIndex === newIndex) return;
+
+        const [moved] = this.items.splice(oldIndex, 1);
+        if (!moved) return;
+        this.items.splice(newIndex, 0, moved);
+
+        const payload: ReorderPayload[] = this.items.map((item, i) => ({
+          itemId: item.id,
+          newPosition: i,
+        }));
+
+        for (let i = 0; i < this.items.length; i++) {
+          this.items[i]!.position = i;
+        }
+
+        reorderItems(payload);
+      },
+    });
   }
 
   // ---- SSE handlers ----
@@ -138,133 +165,6 @@ export class WatchList extends HTMLElement {
         this.render();
         break;
     }
-  }
-
-  // ---- Drag & drop (desktop) ----
-
-  private onDragStart(e: DragEvent, id: number) {
-    this.dragSrcId = id;
-    (e.target as HTMLElement).classList.add("dragging");
-    e.dataTransfer!.effectAllowed = "move";
-  }
-
-  private onDragOver(e: DragEvent) {
-    e.preventDefault();
-    e.dataTransfer!.dropEffect = "move";
-  }
-
-  private onDragEnter(e: DragEvent) {
-    const li = (e.target as HTMLElement).closest(".watch-item");
-    li?.classList.add("drag-over");
-  }
-
-  private onDragLeave(e: DragEvent) {
-    const li = (e.target as HTMLElement).closest(".watch-item");
-    li?.classList.remove("drag-over");
-  }
-
-  private onDrop(e: DragEvent) {
-    e.preventDefault();
-    const targetLi = (e.target as HTMLElement).closest(".watch-item") as HTMLElement | null;
-    if (!targetLi || this.dragSrcId === null) return;
-
-    const targetId = Number(targetLi.dataset.id);
-    if (targetId === this.dragSrcId) return;
-
-    this.reorder(this.dragSrcId, targetId);
-    targetLi.classList.remove("drag-over");
-  }
-
-  private onDragEnd() {
-    this.dragSrcId = null;
-    this.list.querySelectorAll(".dragging").forEach((el) => el.classList.remove("dragging"));
-  }
-
-  // ---- Touch drag (mobile) ----
-
-  private setupTouchDrag(li: HTMLElement, id: number) {
-    let timer: ReturnType<typeof setTimeout>;
-    let active = false;
-
-    li.addEventListener(
-      "touchstart",
-      (e) => {
-        timer = setTimeout(() => {
-          active = true;
-          li.classList.add("dragging");
-          this.dragSrcId = id;
-        }, 400);
-      },
-      { passive: true },
-    );
-
-    li.addEventListener("touchmove", (e) => {
-      if (!active) {
-        clearTimeout(timer);
-        return;
-      }
-      e.preventDefault();
-      const touch = e.touches[0]!;
-      const target = document.elementFromPoint(touch.clientX, touch.clientY);
-      const targetLi = target?.closest(".watch-item") as HTMLElement | null;
-
-      // Clear all drag-over
-      this.list.querySelectorAll(".drag-over").forEach((el) => el.classList.remove("drag-over"));
-      if (targetLi && targetLi !== li) {
-        targetLi.classList.add("drag-over");
-      }
-    });
-
-    li.addEventListener("touchend", () => {
-      clearTimeout(timer);
-      if (!active) return;
-      active = false;
-      li.classList.remove("dragging");
-
-      const over = this.list.querySelector(".drag-over") as HTMLElement | null;
-      if (over && this.dragSrcId !== null) {
-        const targetId = Number(over.dataset.id);
-        this.reorder(this.dragSrcId, targetId);
-      }
-
-      this.list.querySelectorAll(".drag-over").forEach((el) => el.classList.remove("drag-over"));
-      this.dragSrcId = null;
-    });
-
-    li.addEventListener("touchcancel", () => {
-      clearTimeout(timer);
-      active = false;
-      li.classList.remove("dragging");
-      this.list.querySelectorAll(".drag-over").forEach((el) => el.classList.remove("drag-over"));
-      this.dragSrcId = null;
-    });
-  }
-
-  // ---- Reorder logic ----
-
-  private reorder(srcId: number, targetId: number) {
-    const srcIdx = this.items.findIndex((i) => i.id === srcId);
-    const targetIdx = this.items.findIndex((i) => i.id === targetId);
-    if (srcIdx === -1 || targetIdx === -1) return;
-
-    // Move the item in the array
-    const [moved] = this.items.splice(srcIdx, 1);
-    if (!moved) return;
-    this.items.splice(targetIdx, 0, moved);
-
-    // Assign new positions and send to server
-    const payload: ReorderPayload[] = this.items.map((item, i) => ({
-      itemId: item.id,
-      newPosition: i,
-    }));
-
-    // Update local positions
-    for (let i = 0; i < this.items.length; i++) {
-      this.items[i]!.position = i;
-    }
-
-    this.render();
-    reorderItems(payload);
   }
 }
 
