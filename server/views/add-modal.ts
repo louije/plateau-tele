@@ -14,6 +14,7 @@ export interface AddModalData {
   tmdbId: number;
   locale: Locale;
   searchQuery: string | null;
+  users: string[];
 }
 
 export function renderAddModal(data: AddModalData): HtmlEscapedString {
@@ -80,10 +81,7 @@ export function renderAddModal(data: AddModalData): HtmlEscapedString {
           <span>${t(locale, "detail.noteLabel")}</span>
           <textarea name="note" rows="3" placeholder="${t(locale, "detail.notePlaceholder")}"></textarea>
         </label>
-        <label>
-          <span>${t(locale, "detail.addedByLabel")}</span>
-          <input name="addedBy" type="text" required placeholder="${t(locale, "detail.addedByPlaceholder")}" />
-        </label>
+        ${renderAddedBy(data.users, locale)}
 
         <p class="add-form__warning">${t(locale, "addModal.emptyWarning")}</p>
 
@@ -102,4 +100,26 @@ export function renderAddModal(data: AddModalData): HtmlEscapedString {
   `;
 
   return layout(locale, pageTitle, body);
+}
+
+function renderAddedBy(users: string[], locale: Locale): HtmlEscapedString {
+  if (users.length === 0) {
+    return html`
+      <label>
+        <span>${t(locale, "detail.addedByLabel")}</span>
+        <input name="addedBy" type="text" required placeholder="${t(locale, "detail.addedByPlaceholder")}" />
+      </label>`;
+  }
+
+  return html`
+    <fieldset class="added-by-toggle">
+      <legend>${t(locale, "detail.addedByLabel")}</legend>
+      <div class="toggle-group">
+        ${users.map(
+          (user, i) => html`
+            <input type="radio" name="addedBy" id="user-${String(i)}" value="${user}" required />
+            <label for="user-${String(i)}">${user}</label>`,
+        )}
+      </div>
+    </fieldset>`;
 }

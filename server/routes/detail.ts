@@ -22,10 +22,11 @@ detail.get("/:type/:id/add", async (c) => {
   if (!tmdbData) return c.notFound();
 
   const locale = resolveLocale(process.env.LOCALE ?? "fr");
+  const users = (process.env.USERS ?? "").split(",").map(s => s.trim()).filter(Boolean);
   const searchQuery = c.req.query("q") || null;
 
   return c.html(
-    renderAddModal({ tmdbData, mediaType, tmdbId, locale, searchQuery }),
+    renderAddModal({ tmdbData, mediaType, tmdbId, locale, searchQuery, users }),
   );
 });
 

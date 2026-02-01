@@ -5,10 +5,15 @@ const poster = document.querySelector<HTMLImageElement>(".detail-hero__poster, .
 if (poster) applyAccentFromImage(poster);
 
 // Restore last used name
-const addedByInput = document.querySelector<HTMLInputElement>('input[name="addedBy"]');
-if (addedByInput) {
-  const lastUser = localStorage.getItem("plateau-user") || "";
-  if (lastUser) addedByInput.value = lastUser;
+const lastUser = localStorage.getItem("plateau-user") || "";
+if (lastUser) {
+  const textInput = document.querySelector<HTMLInputElement>('input[name="addedBy"][type="text"]');
+  if (textInput) {
+    textInput.value = lastUser;
+  } else {
+    const radio = document.querySelector<HTMLInputElement>(`input[name="addedBy"][value="${CSS.escape(lastUser)}"]`);
+    if (radio) radio.checked = true;
+  }
 }
 
 // CTA forms (mark-watched / remove) — two-step confirm

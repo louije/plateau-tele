@@ -73,11 +73,13 @@ beforeEach(() => {
   originalFetch = globalThis.fetch;
   process.env.TMDB_API_KEY = "test-key";
   process.env.LOCALE = "fr";
+  delete process.env.USERS;
 });
 
 afterEach(() => {
   close();
   globalThis.fetch = originalFetch;
+  delete process.env.USERS;
 });
 
 describe("GET /detail/:type/:id", () => {
@@ -192,15 +194,27 @@ describe("GET /detail/:type/:id", () => {
 });
 
 describe("GET /detail/:type/:id/add", () => {
-  it("renders the add modal for a movie", async () => {
+  it("renders text input when USERS is empty", async () => {
     mockTmdb();
     const res = await app.request("/detail/movie/550/add");
     expect(res.status).toBe(200);
 
     const html = await res.text();
     expect(html).toContain("Fight Club");
+    expect(html).toContain('type="text"');
     expect(html).toContain('name="addedBy"');
-    expect(html).toContain('name="note"');
+    expect(html).not.toContain("toggle-group");
+  });
+
+  it("renders user toggle when USERS is set", async () => {
+    mockTmdb();
+    process.env.USERS = "Cathy,LJ";
+    const res = await app.request("/detail/movie/550/add");
+    const html = await res.text();
+    expect(html).toContain("toggle-group");
+    expect(html).toContain('value="Cathy"');
+    expect(html).toContain('value="LJ"');
+    expect(html).not.toContain('type="text"');
   });
 
   it("returns 404 for invalid media type", async () => {
