@@ -26,7 +26,7 @@ const fr: typeof en = {
   "detail.removeFromList": "Retirer de la liste",
   "detail.watchedConfirm": "Regardé ?",
   "detail.removeConfirm": "Retirer ?",
-  "detail.availableOnJellyfin": "Disponible sur Jellyfin",
+  "detail.availableOnJellyfin": "Déjà téléchargé",
   "detail.requested": "Téléchargement demandé",
   "detail.requestDownload": "Demander le téléchargement",
   "detail.watchProviders": "Où regarder",
