@@ -19,6 +19,7 @@ if (heroImg) {
   window.addEventListener("scroll", applyTransform, { passive: true });
 
   window.addEventListener("touchstart", (e) => {
+    heroImg.style.transition = "";
     startY = e.touches[0]!.clientY;
   }, { passive: true });
 
