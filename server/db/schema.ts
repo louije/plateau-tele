@@ -12,6 +12,9 @@ export const watchItems = sqliteTable("watch_items", {
   year: text("year"),
   note: text("note").notNull().default(""),
   addedBy: text("added_by").notNull(),
+  director: text("director"),
+  country: text("country"),
+  duration: text("duration"),
   position: real("position").notNull(),
   watched: integer("watched", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at")

@@ -121,11 +121,18 @@ function renderCTA(data: DetailPageData, qs: string): HtmlEscapedString {
 
   if (existingItem) {
     return html`
-      <form class="cta-form" data-action="/api/items/${String(existingItem.id)}" data-method="PATCH">
-        <button type="submit" class="btn-cta btn-cta--watched" name="watched" value="true">
-          ${t(locale, "detail.markWatched")}
-        </button>
-      </form>`;
+      <div class="cta-buttons">
+        <form class="cta-form" data-action="/api/items/${String(existingItem.id)}" data-method="PATCH">
+          <button type="submit" class="btn-cta btn-cta--watched" data-confirm="${t(locale, "detail.watchedConfirm")}">
+            ${t(locale, "detail.markWatched")}
+          </button>
+        </form>
+        <form class="cta-form" data-action="/api/items/${String(existingItem.id)}" data-method="DELETE">
+          <button type="submit" class="btn-cta btn-cta--danger" data-confirm="${t(locale, "detail.removeConfirm")}">
+            ${t(locale, "detail.removeFromList")}
+          </button>
+        </form>
+      </div>`;
   }
 
   return html`
@@ -150,7 +157,7 @@ export function formatRuntime(data: Record<string, unknown>, mediaType: MediaTyp
   return m > 0 ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
 
-function extractDirector(data: Record<string, unknown>, mediaType: MediaType): string | null {
+export function extractDirector(data: Record<string, unknown>, mediaType: MediaType): string | null {
   if (mediaType === "movie") {
     const credits = data.credits as { crew?: { job: string; name: string }[] } | undefined;
     return credits?.crew?.find((c) => c.job === "Director")?.name ?? null;

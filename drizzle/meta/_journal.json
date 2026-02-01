@@ -15,6 +15,13 @@
       "when": 1769882269018,
       "tag": "0001_mature_prowler",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1769942358757,
+      "tag": "0002_unique_jack_flag",
+      "breakpoints": true
     }
   ]
 }

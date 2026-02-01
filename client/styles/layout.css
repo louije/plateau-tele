@@ -4,7 +4,7 @@
     top: 0;
     z-index: 10;
     padding: var(--space-md);
-    padding-top: env(safe-area-inset-top, var(--space-md));
+    padding-top: calc(env(safe-area-inset-top, 0px) + var(--space-md));
     background: color-mix(in srgb, var(--color-bg) 85%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

@@ -1,7 +1,7 @@
 import { html } from "hono/html";
 import type { HtmlEscapedString } from "hono/utils/html";
 import { layout } from "./layout.js";
-import { extractYear, formatRuntime } from "./detail.js";
+import { extractYear, formatRuntime, extractDirector } from "./detail.js";
 import { t } from "../../shared/i18n/index.js";
 import type { Locale } from "../../shared/i18n/index.js";
 import { posterUrl } from "../../shared/tmdb-image.js";
@@ -26,6 +26,7 @@ export function renderAddModal(data: AddModalData): HtmlEscapedString {
   const year = extractYear(tmdbData);
   const runtime = formatRuntime(tmdbData, mediaType);
   const country = ((tmdbData.origin_country as string[]) ?? [])[0] ?? null;
+  const director = extractDirector(tmdbData, mediaType);
 
   const { primary, subtitle } = displayTitle(title, originalTitle, originalLanguage);
   const pageTitle = `${primary} — plateau-télé`;
@@ -71,6 +72,9 @@ export function renderAddModal(data: AddModalData): HtmlEscapedString {
         <input type="hidden" name="originalLanguage" value="${originalLanguage}" />
         <input type="hidden" name="posterPath" value="${pPath ?? ""}" />
         <input type="hidden" name="year" value="${year ?? ""}" />
+        <input type="hidden" name="director" value="${director ?? ""}" />
+        <input type="hidden" name="country" value="${country ?? ""}" />
+        <input type="hidden" name="duration" value="${runtime ?? ""}" />
 
         <label>
           <span>${t(locale, "detail.noteLabel")}</span>
@@ -81,7 +85,7 @@ export function renderAddModal(data: AddModalData): HtmlEscapedString {
           <input name="addedBy" type="text" required placeholder="${t(locale, "detail.addedByPlaceholder")}" />
         </label>
 
-        <p class="add-form__warning" hidden>${t(locale, "addModal.emptyWarning")}</p>
+        <p class="add-form__warning">${t(locale, "addModal.emptyWarning")}</p>
 
         <div class="add-form__buttons">
           <button type="submit" class="btn-cta btn-cta--secondary" data-position="top">

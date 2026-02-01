@@ -11,6 +11,9 @@ export interface WatchItem {
   year: string | null;
   note: string;
   addedBy: string;
+  director: string | null;
+  country: string | null;
+  duration: string | null;
   position: number;
   watched: boolean;
   createdAt: string;
@@ -41,6 +44,9 @@ export interface WatchItemCreate {
   year: string | null;
   note: string;
   addedBy: string;
+  director: string | null;
+  country: string | null;
+  duration: string | null;
 }
 
 export interface ReorderPayload {

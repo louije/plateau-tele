@@ -1,7 +1,5 @@
 import {
   fetchItems,
-  removeItem,
-  updateItem,
   reorderItems,
 } from "../services/api.js";
 import { subscribe } from "../services/events.js";
@@ -48,7 +46,9 @@ export class WatchList extends HTMLElement {
       const titleEl = li.querySelector(".watch-item__title")!;
       const subtitleEl = li.querySelector(".watch-item__subtitle")!;
       const meta = li.querySelector(".watch-item__meta")!;
+      const directorEl = li.querySelector(".watch-item__director")!;
       const note = li.querySelector(".watch-item__note")!;
+      const addedByEl = li.querySelector(".watch-item__added-by")!;
 
       const src = posterUrl(item.posterPath);
       if (src) img.src = src;
@@ -59,25 +59,20 @@ export class WatchList extends HTMLElement {
       meta.textContent = [
         item.mediaType === "tv" ? t("watchItem.tv") : t("watchItem.movie"),
         item.year,
-        item.addedBy,
+        item.country,
+        item.duration,
       ]
         .filter(Boolean)
         .join(" · ");
+      if (item.director) {
+        const label = item.mediaType === "tv" ? t("detail.creator") : t("detail.director");
+        directorEl.textContent = `${label}\u00a0: ${item.director}`;
+      } else {
+        directorEl.remove();
+      }
       note.textContent = item.note || "";
-
-      // Watched button
-      const btnWatched = li.querySelector(".btn-watched")!;
-      btnWatched.setAttribute("aria-label", t("watchItem.markWatched"));
-      btnWatched.addEventListener("click", () => {
-        updateItem(item.id, { watched: true });
-      });
-
-      // Remove button
-      const btnRemove = li.querySelector(".btn-remove")!;
-      btnRemove.setAttribute("aria-label", t("watchItem.remove"));
-      btnRemove.addEventListener("click", () => {
-        removeItem(item.id);
-      });
+      if (item.addedBy) addedByEl.textContent = item.addedBy;
+      else addedByEl.remove();
 
       // Drag events for reordering
       li.addEventListener("dragstart", (e) => this.onDragStart(e, item.id));
@@ -90,13 +85,9 @@ export class WatchList extends HTMLElement {
       // Touch-based reorder (long press)
       this.setupTouchDrag(li, item.id);
 
-      // Tap to open TMDB page
+      // Tap to open detail page
       li.querySelector(".watch-item__body")!.addEventListener("click", () => {
-        const base =
-          item.mediaType === "tv"
-            ? "https://www.themoviedb.org/tv/"
-            : "https://www.themoviedb.org/movie/";
-        window.open(base + item.tmdbId, "_blank");
+        window.location.href = `/detail/${item.mediaType}/${item.tmdbId}`;
       });
 
       this.list.appendChild(frag);

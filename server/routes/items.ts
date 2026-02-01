@@ -19,6 +19,9 @@ function rowToItem(row: typeof schema.watchItems.$inferSelect): WatchItem {
     year: row.year,
     note: row.note,
     addedBy: row.addedBy,
+    director: row.director,
+    country: row.country,
+    duration: row.duration,
     position: row.position,
     watched: row.watched,
     createdAt: row.createdAt,
@@ -73,6 +76,9 @@ items.post("/", async (c) => {
       year: body.year,
       note: body.note,
       addedBy: body.addedBy,
+      director: body.director ?? null,
+      country: body.country ?? null,
+      duration: body.duration ?? null,
       position,
     })
     .returning()
