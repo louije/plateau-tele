@@ -12,7 +12,7 @@ const fr: typeof en = {
   "detail.back": "Retour",
   "detail.home": "Accueil",
   "detail.addToList": "Ajouter à la liste",
-  "detail.addToTop": "Ajouter en haut",
+  "detail.addToTop": "Ajouter en haut de la liste",
   "detail.markWatched": "Marquer comme regardé",
   "detail.alreadyWatched": "Déjà regardé",
   "detail.inList": "Déjà dans la liste",

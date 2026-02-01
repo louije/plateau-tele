@@ -1,3 +1,5 @@
+
+
 const en = {
   "search.placeholder": "Search movies & shows…",
   "search.ariaLabel": "Search movies and shows",
