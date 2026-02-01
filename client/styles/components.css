@@ -192,7 +192,35 @@
 
     &.watch-item--chosen {
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
-      transform: scale(1.02);
+      z-index: 10;
+    }
+
+    &.sortable-fallback {
+      transition: none !important;
+    }
+  }
+
+  .watch-item__handle {
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    .watch-item__handle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      display: grid;
+      place-items: center;
+      width: 40px;
+      color: var(--color-text-muted);
+      cursor: grab;
+      touch-action: none;
+
+      &::before {
+        content: "⠿";
+        font-size: 1.2rem;
+      }
     }
   }
 

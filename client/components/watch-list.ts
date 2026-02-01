@@ -95,10 +95,13 @@ export class WatchList extends HTMLElement {
   }
 
   private initSortable() {
+    const isTouchDevice = matchMedia("(max-width: 600px)").matches;
     this.sortable = Sortable.create(this.list, {
       animation: 200,
-      delay: 300,
+      handle: isTouchDevice ? ".watch-item__handle" : undefined,
+      delay: isTouchDevice ? 0 : 300,
       delayOnTouchOnly: true,
+      forceFallback: isTouchDevice,
       draggable: ".watch-item",
       ghostClass: "watch-item--ghost",
       chosenClass: "watch-item--chosen",
