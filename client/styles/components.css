@@ -1,7 +1,17 @@
 @layer components {
   /* ---- Search bar ---- */
+  search-bar {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 10;
+  }
+
   .search-bar {
     position: relative;
+    padding: var(--space-sm) 0;
+    background: color-mix(in srgb, var(--color-bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
   }
 
   .search-bar__header {

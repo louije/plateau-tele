@@ -8,6 +8,7 @@ cpSync("client/index.html", "dist/public/index.html");
 cpSync("client/styles", "dist/public/styles", { recursive: true });
 cpSync("client/styles.css", "dist/public/styles.css");
 cpSync("client/icons", "dist/public/icons", { recursive: true });
+cpSync("shared/plateau-tele.png", "dist/public/plateau-tele.png");
 
 /** @type {esbuild.BuildOptions} */
 const config = {

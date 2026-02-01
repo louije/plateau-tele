@@ -1,4 +1,5 @@
 @layer layout {
+  /* ---- Detail page header (sticky, used on non-home pages) ---- */
   header {
     position: sticky;
     top: 0;
@@ -21,25 +22,46 @@
     color: inherit;
   }
 
-  .header-home {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
+  /* ---- Home hero ---- */
+  .hero {
+    position: sticky;
+    top: 0;
+    height: 40vh;
+    z-index: -1;
   }
 
-  .logo-home {
-    width: 48px;
-    height: 48px;
-    border-radius: var(--radius);
+  .hero__logo {
+    position: relative;
+    top: -20px;
+    width: 100%;
+    height: calc(100% + 20px);
+    object-fit: cover;
+    object-position: center 30%;
+    will-change: transform;
   }
 
+  /* ---- Main ---- */
   main {
+    position: relative;
     display: grid;
     gap: var(--space-md);
     padding: var(--space-md);
     padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-xl));
     max-width: 600px;
     margin: 0 auto;
+    z-index: 1;
+
+    /* Full-width background to hide hero on sides */
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      left: 50%;
+      width: 100vw;
+      transform: translateX(-50%);
+      background: var(--color-bg);
+      z-index: -1;
+    }
   }
 
   main.layout-wide {
