@@ -72,26 +72,19 @@ describe("POST /api/items/reorder", () => {
     expect(items[2]!.title).toBe("B");
   });
 
-  it("handles moving a single item to a different position", async () => {
-    const a = await createItem("A", 1);
-    const b = await createItem("B", 2);
-    const c = await createItem("C", 3);
+  it("handles empty reorder payload", async () => {
+    await createItem("A", 1);
+    await createItem("B", 2);
 
-    // Move C to position 0, shift others
-    const payload: ReorderPayload[] = [
-      { itemId: c.id, newPosition: 0 },
-      { itemId: a.id, newPosition: 1 },
-      { itemId: b.id, newPosition: 2 },
-    ];
-
-    await req("/reorder", {
+    const res = await req("/reorder", {
       method: "POST",
-      body: JSON.stringify(payload),
+      body: JSON.stringify([]),
     });
+    expect(res.status).toBe(200);
 
     const listRes = await req("/");
     const items = (await listRes.json()) as WatchItem[];
-    expect(items.map((i) => i.title)).toEqual(["C", "A", "B"]);
+    expect(items.map((i) => i.title)).toEqual(["A", "B"]);
   });
 
   it("handles reordering a single item list (no-op)", async () => {

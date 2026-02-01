@@ -164,6 +164,260 @@ describe("GET /api/search", () => {
     const res = await app.request("/api/search?q=fight");
     expect(res.status).toBe(500);
   });
+
+  it("includes known_for items from person results", async () => {
+    process.env.TMDB_API_KEY = "test-key";
+
+    const personOnly = {
+      results: [
+        {
+          id: 999,
+          media_type: "person",
+          name: "Brad Pitt",
+          known_for: [
+            {
+              id: 807,
+              media_type: "movie",
+              title: "Se7en",
+              poster_path: "/se7en.jpg",
+              release_date: "1995-09-22",
+              overview: "Two detectives...",
+              popularity: 40,
+            },
+          ],
+        },
+      ],
+    };
+
+    const detail = {
+      runtime: 127,
+      origin_country: ["US"],
+      credits: { crew: [{ job: "Director", name: "David Fincher" }] },
+    };
+
+    globalThis.fetch = mock((input: string | URL | Request) => {
+      const url = typeof input === "string" ? input : input.toString();
+      let body: unknown = personOnly;
+      if (url.includes("/movie/807")) body = detail;
+      return Promise.resolve(
+        new Response(JSON.stringify(body), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const res = await app.request("/api/search?q=brad");
+    const body = (await res.json()) as Array<Record<string, unknown>>;
+    expect(body).toHaveLength(1);
+    expect(body[0]!.title).toBe("Se7en");
+    expect(body[0]!.director).toBe("David Fincher");
+  });
+
+  it("deduplicates known_for items already in direct results", async () => {
+    process.env.TMDB_API_KEY = "test-key";
+
+    const withDupe = {
+      results: [
+        {
+          id: 550,
+          media_type: "movie",
+          title: "Fight Club",
+          poster_path: "/poster550.jpg",
+          release_date: "1999-10-15",
+          overview: "An insomniac...",
+          popularity: 60,
+        },
+        {
+          id: 999,
+          media_type: "person",
+          name: "Brad Pitt",
+          known_for: [
+            {
+              id: 550,
+              media_type: "movie",
+              title: "Fight Club",
+              poster_path: "/poster550.jpg",
+              release_date: "1999-10-15",
+              overview: "An insomniac...",
+              popularity: 60,
+            },
+          ],
+        },
+      ],
+    };
+
+    const detail = {
+      runtime: 139,
+      origin_country: ["US"],
+      credits: { crew: [{ job: "Director", name: "David Fincher" }] },
+    };
+
+    globalThis.fetch = mock((input: string | URL | Request) => {
+      const url = typeof input === "string" ? input : input.toString();
+      let body: unknown = withDupe;
+      if (url.includes("/movie/550")) body = detail;
+      return Promise.resolve(
+        new Response(JSON.stringify(body), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const res = await app.request("/api/search?q=fight");
+    const body = (await res.json()) as Array<Record<string, unknown>>;
+    expect(body).toHaveLength(1);
+  });
+
+  it("suppresses originalTitle when it matches title", async () => {
+    process.env.TMDB_API_KEY = "test-key";
+
+    const response = {
+      results: [
+        {
+          id: 550,
+          media_type: "movie",
+          title: "Fight Club",
+          original_title: "Fight Club",
+          original_language: "en",
+          poster_path: "/poster.jpg",
+          release_date: "1999-10-15",
+          overview: "...",
+          popularity: 50,
+        },
+      ],
+    };
+
+    const detail = {
+      runtime: 139,
+      origin_country: ["US"],
+      credits: { crew: [{ job: "Director", name: "David Fincher" }] },
+    };
+
+    globalThis.fetch = mock((input: string | URL | Request) => {
+      const url = typeof input === "string" ? input : input.toString();
+      let body: unknown = response;
+      if (url.includes("/movie/550")) body = detail;
+      return Promise.resolve(
+        new Response(JSON.stringify(body), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const res = await app.request("/api/search?q=fight");
+    const body = (await res.json()) as Array<Record<string, unknown>>;
+    expect(body[0]!.originalTitle).toBeNull();
+  });
+
+  it("preserves originalTitle when different from title", async () => {
+    process.env.TMDB_API_KEY = "test-key";
+
+    const response = {
+      results: [
+        {
+          id: 1234,
+          media_type: "movie",
+          title: "Life Is Beautiful",
+          original_title: "La vita è bella",
+          original_language: "it",
+          poster_path: "/poster.jpg",
+          release_date: "1997-12-20",
+          overview: "...",
+          popularity: 50,
+        },
+      ],
+    };
+
+    const detail = {
+      runtime: 116,
+      origin_country: ["IT"],
+      credits: { crew: [{ job: "Director", name: "Roberto Benigni" }] },
+    };
+
+    globalThis.fetch = mock((input: string | URL | Request) => {
+      const url = typeof input === "string" ? input : input.toString();
+      let body: unknown = response;
+      if (url.includes("/movie/1234")) body = detail;
+      return Promise.resolve(
+        new Response(JSON.stringify(body), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const res = await app.request("/api/search?q=beautiful");
+    const body = (await res.json()) as Array<Record<string, unknown>>;
+    expect(body[0]!.originalTitle).toBe("La vita è bella");
+  });
+
+  it("sorts results by popularity and caps at 8", async () => {
+    process.env.TMDB_API_KEY = "test-key";
+
+    const results = Array.from({ length: 10 }, (_, i) => ({
+      id: 100 + i,
+      media_type: "movie",
+      title: `Movie ${i}`,
+      poster_path: null,
+      release_date: "2024-01-01",
+      overview: "...",
+      popularity: i * 10,
+    }));
+
+    globalThis.fetch = mock((input: string | URL | Request) => {
+      const url = typeof input === "string" ? input : input.toString();
+      let body: unknown = { results };
+      if (url.includes("/movie/")) body = { runtime: 90, origin_country: ["US"], credits: { crew: [] } };
+      return Promise.resolve(
+        new Response(JSON.stringify(body), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const res = await app.request("/api/search?q=movie");
+    const body = (await res.json()) as Array<Record<string, unknown>>;
+    expect(body).toHaveLength(8);
+    // Highest popularity first
+    expect(body[0]!.title).toBe("Movie 9");
+    expect(body[7]!.title).toBe("Movie 2");
+  });
+
+  it("handles enrichment fetch failure gracefully", async () => {
+    process.env.TMDB_API_KEY = "test-key";
+
+    const response = {
+      results: [
+        {
+          id: 550,
+          media_type: "movie",
+          title: "Fight Club",
+          poster_path: "/poster.jpg",
+          release_date: "1999-10-15",
+          overview: "...",
+          popularity: 50,
+        },
+      ],
+    };
+
+    globalThis.fetch = mock((input: string | URL | Request) => {
+      const url = typeof input === "string" ? input : input.toString();
+      if (url.includes("/movie/550")) {
+        return Promise.resolve(new Response(null, { status: 500 }));
+      }
+      return Promise.resolve(
+        new Response(JSON.stringify(response), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const res = await app.request("/api/search?q=fight");
+    const body = (await res.json()) as Array<Record<string, unknown>>;
+    expect(body).toHaveLength(1);
+    expect(body[0]!.title).toBe("Fight Club");
+    expect(body[0]!.director).toBeNull();
+    expect(body[0]!.duration).toBeNull();
+  });
 });
 
 describe("GET /api/search/details/:type/:id", () => {

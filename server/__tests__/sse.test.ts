@@ -92,6 +92,25 @@ describe("SSE module", () => {
     expect(enqueued).toHaveLength(0);
   });
 
+  it("removes client when enqueue throws", () => {
+    addClient("test-1", controller);
+
+    // Make enqueue throw to simulate a closed stream
+    controller.enqueue = () => {
+      throw new Error("stream closed");
+    };
+
+    broadcast({ type: "item:removed", itemId: 1 });
+    expect(enqueued).toHaveLength(0);
+
+    // Restore enqueue and verify client was auto-removed
+    controller.enqueue = (chunk: Uint8Array) => {
+      enqueued.push(chunk);
+    };
+    broadcast({ type: "item:removed", itemId: 2 });
+    expect(enqueued).toHaveLength(0);
+  });
+
   it("handles different event types", () => {
     addClient("test-1", controller);
 

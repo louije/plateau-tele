@@ -21,7 +21,7 @@ detail.get("/:type/:id/add", async (c) => {
   const tmdbData = await getDetails(tmdbId, mediaType);
   if (!tmdbData) return c.notFound();
 
-  const locale = resolveLocale(c.req.header("Accept-Language") ?? "");
+  const locale = resolveLocale(process.env.LOCALE ?? "fr");
   const searchQuery = c.req.query("q") || null;
 
   return c.html(
@@ -52,8 +52,7 @@ detail.get("/:type/:id", async (c) => {
     )
     .get();
 
-  const locale = resolveLocale(c.req.header("Accept-Language") ?? "");
-
+  const locale = resolveLocale(process.env.LOCALE ?? "fr");
   const searchQuery = c.req.query("q") || null;
 
   return c.html(

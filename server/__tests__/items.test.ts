@@ -154,6 +154,34 @@ describe("POST /api/items", () => {
     expect(item.posterPath).toBeNull();
     expect(item.year).toBeNull();
   });
+
+  it("adds item to top when addToTop is true", async () => {
+    await req("/", { method: "POST", body: JSON.stringify(sampleItem) });
+    await req("/", {
+      method: "POST",
+      body: JSON.stringify({ ...sampleItem, title: "The Matrix", tmdbId: 603 }),
+    });
+
+    const res = await req("/", {
+      method: "POST",
+      body: JSON.stringify({
+        ...sampleItem,
+        title: "Inception",
+        tmdbId: 27205,
+        addToTop: true,
+      }),
+    });
+    const created = (await res.json()) as WatchItem;
+    expect(created.position).toBe(0);
+
+    const listRes = await req("/");
+    const items = (await listRes.json()) as WatchItem[];
+    expect(items.map((i) => i.title)).toEqual([
+      "Inception",
+      "Fight Club",
+      "The Matrix",
+    ]);
+  });
 });
 
 describe("PATCH /api/items/:id", () => {
