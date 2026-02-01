@@ -254,6 +254,7 @@
   .watch-providers {
     display: grid;
     gap: var(--space-sm);
+    justify-items: start;
   }
 
   .provider-row {

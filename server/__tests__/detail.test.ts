@@ -223,7 +223,7 @@ describe("GET /detail/:type/:id", () => {
     const res = await app.request("/detail/movie/550");
     const html = await res.text();
     expect(html).toContain("availability--available");
-    expect(html).toContain("Disponible sur Jellyfin");
+    expect(html).toContain("Déjà téléchargé");
     expect(html).not.toContain("btn-request");
   });
 
@@ -254,11 +254,11 @@ describe("GET /detail/:type/:id", () => {
     expect(html).toContain("provider__logo");
   });
 
-  it("does not render watch providers section when FR has none", async () => {
+  it("does not render provider logos when FR has none", async () => {
     mockTmdb();
     const res = await app.request("/detail/tv/1396");
     const html = await res.text();
-    expect(html).not.toContain("watch-providers");
+    expect(html).not.toContain("provider__logo");
   });
 
   it("shows request button text in English", async () => {

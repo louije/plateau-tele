@@ -88,13 +88,12 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
           <p class="detail-hero__meta">${meta}</p>
           ${director ? html`<p class="detail-hero__director">${directorLabel}${raw("&nbsp;: ")}${director}</p>` : ""}
           ${renderCTA(data, qs)}
-          ${renderAvailability(data)}
         </div>
       </div>
 
       ${overview ? html`<p class="detail-overview">${overview}</p>` : ""}
 
-      ${renderWatchProviders(tmdbData, locale)}
+      ${renderWatchProviders(tmdbData, data)}
 
       ${cast.length > 0
         ? html`
@@ -151,29 +150,27 @@ function renderCTA(data: DetailPageData, qs: string): HtmlEscapedString {
     </a>`;
 }
 
-function renderAvailability(data: DetailPageData): HtmlEscapedString {
+function renderWatchProviders(tmdbData: Record<string, unknown>, data: DetailPageData): HtmlEscapedString {
   const { availability, mediaType, tmdbId, locale } = data;
-
-  if (availability.status === "available") {
-    return html`<p class="availability availability--available">${t(locale, "detail.availableOnJellyfin")}</p>`;
-  }
-  if (availability.status === "requested" || availability.status === "processing") {
-    return html`<p class="availability availability--requested">${t(locale, "detail.requested")}</p>`;
-  }
-  return html`
-    <button class="btn-cta btn-cta--secondary btn-request"
-      data-tmdb-id="${String(tmdbId)}" data-media-type="${mediaType}">
-      ${t(locale, "detail.requestDownload")}
-    </button>`;
-}
-
-function renderWatchProviders(tmdbData: Record<string, unknown>, locale: Locale): HtmlEscapedString {
   const providers = extractWatchProviders(tmdbData);
-  if (!providers.flatrate.length && !providers.buy.length) return html``;
+  const hasProviders = providers.flatrate.length > 0 || providers.buy.length > 0;
+  const hasAvailability = availability.status !== "unavailable";
+  const hasRequest = !hasAvailability;
+
+  if (!hasProviders && !hasAvailability && !hasRequest) return html``;
 
   return html`
     <section class="watch-providers">
       <h3>${t(locale, "detail.watchProviders")}</h3>
+      ${availability.status === "available"
+        ? html`<p class="availability availability--available">${t(locale, "detail.availableOnJellyfin")}</p>`
+        : availability.status === "requested" || availability.status === "processing"
+          ? html`<p class="availability availability--requested">${t(locale, "detail.requested")}</p>`
+          : html`
+            <button class="btn-cta btn-cta--secondary btn-request"
+              data-tmdb-id="${String(tmdbId)}" data-media-type="${mediaType}">
+              ${t(locale, "detail.requestDownload")}
+            </button>`}
       ${providers.flatrate.length > 0
         ? html`
           <div class="provider-row">
