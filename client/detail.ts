@@ -60,6 +60,31 @@ ctaForms.forEach((form) => {
   });
 });
 
+// Jellyseerr request button
+const requestBtn = document.querySelector<HTMLButtonElement>(".btn-request");
+if (requestBtn) {
+  requestBtn.addEventListener("click", async () => {
+    requestBtn.disabled = true;
+    const tmdbId = Number(requestBtn.dataset.tmdbId);
+    const mediaType = requestBtn.dataset.mediaType;
+
+    const res = await fetch("/api/jellyseerr/request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tmdbId, mediaType }),
+    });
+
+    if (res.ok) {
+      requestBtn.classList.remove("btn-cta--secondary");
+      requestBtn.classList.add("btn-request--done");
+      requestBtn.textContent = document.documentElement.lang === "en"
+        ? "Requested" : "Téléchargement demandé";
+    } else {
+      requestBtn.disabled = false;
+    }
+  });
+}
+
 // Add-to-list form (add modal page)
 const addForm = document.querySelector<HTMLFormElement>(".add-form");
 if (addForm) {

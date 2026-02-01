@@ -6,6 +6,7 @@ import { items } from "./routes/items.js";
 import { search } from "./routes/search.js";
 import { events } from "./routes/events.js";
 import { detail } from "./routes/detail.js";
+import { jellyseerr } from "./routes/jellyseerr.js";
 
 export type DbInstance = BunSQLiteDatabase<typeof schema>;
 
@@ -30,6 +31,7 @@ export function createApp(db: DbInstance) {
   app.route("/api/search", search);
   app.route("/api/events", events);
   app.route("/detail", detail);
+  app.route("/api/jellyseerr", jellyseerr);
 
   app.onError((err, c) => {
     console.error(err.message);

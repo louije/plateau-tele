@@ -220,6 +220,70 @@
     color: var(--color-text-muted);
   }
 
+  /* ---- Availability ---- */
+  .availability {
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .availability--available {
+    color: var(--color-success);
+  }
+
+  .availability--requested {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .btn-request--done {
+    background: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    font-style: italic;
+    cursor: default;
+  }
+
+  /* ---- Watch providers ---- */
+  .watch-providers h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 var(--space-sm);
+  }
+
+  .watch-providers {
+    display: grid;
+    gap: var(--space-sm);
+  }
+
+  .provider-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .provider-row__label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    white-space: nowrap;
+    min-width: 5em;
+  }
+
+  .provider-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    gap: var(--space-xs);
+    flex-wrap: wrap;
+  }
+
+  .provider__logo {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+  }
+
   /* ---- Add modal ---- */
   .add-modal {
     display: grid;

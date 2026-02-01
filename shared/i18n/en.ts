@@ -26,6 +26,12 @@ const en = {
   "detail.removeFromList": "Remove from list",
   "detail.watchedConfirm": "Watched?",
   "detail.removeConfirm": "Remove?",
+  "detail.availableOnJellyfin": "Available on Jellyfin",
+  "detail.requested": "Requested",
+  "detail.requestDownload": "Request download",
+  "detail.watchProviders": "Where to watch",
+  "detail.streaming": "Streaming",
+  "detail.buy": "Buy / Rent",
   "addModal.emptyWarning": "No reason? Press again to add anyway.",
 } as const;
 

@@ -6,6 +6,7 @@ import type { Locale } from "../../shared/i18n/index.js";
 import { posterUrl, profileUrl } from "../../shared/tmdb-image.js";
 import { displayTitle } from "../../client/lib/title.js";
 import type { MediaType } from "../../shared/types.js";
+import type { MediaAvailability } from "../jellyseerr.js";
 
 interface CastMember {
   name: string;
@@ -18,6 +19,11 @@ interface ExistingItem {
   watched: boolean;
 }
 
+interface WatchProvider {
+  name: string;
+  logoPath: string;
+}
+
 export interface DetailPageData {
   tmdbData: Record<string, unknown>;
   mediaType: MediaType;
@@ -25,6 +31,7 @@ export interface DetailPageData {
   existingItem: ExistingItem | null;
   locale: Locale;
   searchQuery: string | null;
+  availability: MediaAvailability;
 }
 
 export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
@@ -81,10 +88,13 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
           <p class="detail-hero__meta">${meta}</p>
           ${director ? html`<p class="detail-hero__director">${directorLabel}${raw("&nbsp;: ")}${director}</p>` : ""}
           ${renderCTA(data, qs)}
+          ${renderAvailability(data)}
         </div>
       </div>
 
       ${overview ? html`<p class="detail-overview">${overview}</p>` : ""}
+
+      ${renderWatchProviders(tmdbData, locale)}
 
       ${cast.length > 0
         ? html`
@@ -139,6 +149,66 @@ function renderCTA(data: DetailPageData, qs: string): HtmlEscapedString {
     <a href="${`/detail/${mediaType}/${String(tmdbId)}/add${qs}`}" class="btn-cta">
       ${t(locale, "detail.addToList")}
     </a>`;
+}
+
+function renderAvailability(data: DetailPageData): HtmlEscapedString {
+  const { availability, mediaType, tmdbId, locale } = data;
+
+  if (availability.status === "available") {
+    return html`<p class="availability availability--available">${t(locale, "detail.availableOnJellyfin")}</p>`;
+  }
+  if (availability.status === "requested" || availability.status === "processing") {
+    return html`<p class="availability availability--requested">${t(locale, "detail.requested")}</p>`;
+  }
+  return html`
+    <button class="btn-cta btn-cta--secondary btn-request"
+      data-tmdb-id="${String(tmdbId)}" data-media-type="${mediaType}">
+      ${t(locale, "detail.requestDownload")}
+    </button>`;
+}
+
+function renderWatchProviders(tmdbData: Record<string, unknown>, locale: Locale): HtmlEscapedString {
+  const providers = extractWatchProviders(tmdbData);
+  if (!providers.flatrate.length && !providers.buy.length) return html``;
+
+  return html`
+    <section class="watch-providers">
+      <h3>${t(locale, "detail.watchProviders")}</h3>
+      ${providers.flatrate.length > 0
+        ? html`
+          <div class="provider-row">
+            <span class="provider-row__label">${t(locale, "detail.streaming")}</span>
+            <ul class="provider-list">
+              ${providers.flatrate.map((p) => html`
+                <li class="provider" title="${p.name}">
+                  <img class="provider__logo" src="https://image.tmdb.org/t/p/w45${p.logoPath}" alt="${p.name}" />
+                </li>`)}
+            </ul>
+          </div>`
+        : ""}
+      ${providers.buy.length > 0
+        ? html`
+          <div class="provider-row">
+            <span class="provider-row__label">${t(locale, "detail.buy")}</span>
+            <ul class="provider-list">
+              ${providers.buy.map((p) => html`
+                <li class="provider" title="${p.name}">
+                  <img class="provider__logo" src="https://image.tmdb.org/t/p/w45${p.logoPath}" alt="${p.name}" />
+                </li>`)}
+            </ul>
+          </div>`
+        : ""}
+    </section>`;
+}
+
+function extractWatchProviders(data: Record<string, unknown>): { flatrate: WatchProvider[]; buy: WatchProvider[] } {
+  const wp = data["watch/providers"] as { results?: Record<string, { flatrate?: { provider_name: string; logo_path: string }[]; buy?: { provider_name: string; logo_path: string }[] }> } | undefined;
+  const fr = wp?.results?.FR;
+  if (!fr) return { flatrate: [], buy: [] };
+
+  const flatrate = (fr.flatrate ?? []).map((p) => ({ name: p.provider_name, logoPath: p.logo_path }));
+  const buy = (fr.buy ?? []).slice(0, 5).map((p) => ({ name: p.provider_name, logoPath: p.logo_path }));
+  return { flatrate, buy };
 }
 
 export function extractYear(data: Record<string, unknown>): string | null {

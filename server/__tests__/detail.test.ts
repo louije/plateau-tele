@@ -24,7 +24,18 @@ const movieData = {
       { name: "Brad Pitt", character: "Tyler Durden", profile_path: "/brad.jpg", order: 0 },
     ],
   },
-  "watch/providers": {},
+  "watch/providers": {
+    results: {
+      FR: {
+        flatrate: [
+          { provider_name: "Disney Plus", logo_path: "/disney.jpg" },
+        ],
+        buy: [
+          { provider_name: "Apple TV", logo_path: "/apple.jpg" },
+        ],
+      },
+    },
+  },
 };
 
 const tvData = {
@@ -46,9 +57,20 @@ const tvData = {
   "watch/providers": {},
 };
 
-function mockTmdb() {
+const jellyseerrAvailable = { mediaInfo: { status: 5 } };
+const jellyseerrRequested = { mediaInfo: { status: 2 } };
+const jellyseerrUnavailable = {};
+
+function mockTmdb(jellyseerrData: Record<string, unknown> = jellyseerrUnavailable) {
   globalThis.fetch = mock((input: string | URL | Request) => {
     const url = typeof input === "string" ? input : input.toString();
+    if (url.includes("jellyseerr")) {
+      return Promise.resolve(
+        new Response(JSON.stringify(jellyseerrData), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }
     if (url.includes("/movie/550")) {
       return Promise.resolve(
         new Response(JSON.stringify(movieData), {
@@ -73,6 +95,8 @@ beforeEach(() => {
   originalFetch = globalThis.fetch;
   process.env.TMDB_API_KEY = "test-key";
   process.env.LOCALE = "fr";
+  process.env.JELLYSEERR_URL = "http://jellyseerr:5055";
+  process.env.JELLYSEERR_API_KEY = "test-api-key";
   delete process.env.USERS;
 });
 
@@ -80,6 +104,8 @@ afterEach(() => {
   close();
   globalThis.fetch = originalFetch;
   delete process.env.USERS;
+  delete process.env.JELLYSEERR_URL;
+  delete process.env.JELLYSEERR_API_KEY;
 });
 
 describe("GET /detail/:type/:id", () => {
@@ -190,6 +216,68 @@ describe("GET /detail/:type/:id", () => {
     const res = await app.request("/detail/movie/550?q=fight");
     const html = await res.text();
     expect(html).toContain("?q=fight");
+  });
+
+  it("shows available badge when Jellyfin has the media", async () => {
+    mockTmdb(jellyseerrAvailable);
+    const res = await app.request("/detail/movie/550");
+    const html = await res.text();
+    expect(html).toContain("availability--available");
+    expect(html).toContain("Disponible sur Jellyfin");
+    expect(html).not.toContain("btn-request");
+  });
+
+  it("shows requested status when already requested", async () => {
+    mockTmdb(jellyseerrRequested);
+    const res = await app.request("/detail/movie/550");
+    const html = await res.text();
+    expect(html).toContain("availability--requested");
+    expect(html).toContain("Téléchargement demandé");
+    expect(html).not.toContain("btn-request");
+  });
+
+  it("shows request button when not available", async () => {
+    mockTmdb(jellyseerrUnavailable);
+    const res = await app.request("/detail/movie/550");
+    const html = await res.text();
+    expect(html).toContain("btn-request");
+    expect(html).toContain("Demander le téléchargement");
+  });
+
+  it("renders FR watch providers", async () => {
+    mockTmdb();
+    const res = await app.request("/detail/movie/550");
+    const html = await res.text();
+    expect(html).toContain("Où regarder");
+    expect(html).toContain("Disney Plus");
+    expect(html).toContain("Apple TV");
+    expect(html).toContain("provider__logo");
+  });
+
+  it("does not render watch providers section when FR has none", async () => {
+    mockTmdb();
+    const res = await app.request("/detail/tv/1396");
+    const html = await res.text();
+    expect(html).not.toContain("watch-providers");
+  });
+
+  it("shows request button text in English", async () => {
+    mockTmdb(jellyseerrUnavailable);
+    process.env.LOCALE = "en";
+    const res = await app.request("/detail/movie/550");
+    const html = await res.text();
+    expect(html).toContain("Request download");
+  });
+
+  it("degrades gracefully when Jellyseerr is not configured", async () => {
+    delete process.env.JELLYSEERR_URL;
+    delete process.env.JELLYSEERR_API_KEY;
+    mockTmdb();
+    const res = await app.request("/detail/movie/550");
+    expect(res.status).toBe(200);
+    const html = await res.text();
+    // Should show request button (unavailable status)
+    expect(html).toContain("btn-request");
   });
 });
 

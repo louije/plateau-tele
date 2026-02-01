@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { eq, and } from "drizzle-orm";
 import { getDetails } from "../tmdb.js";
+import { getMediaAvailability } from "../jellyseerr.js";
 import * as schema from "../db/schema.js";
 import { renderDetailPage } from "../views/detail.js";
 import { renderAddModal } from "../views/add-modal.js";
@@ -38,7 +39,10 @@ detail.get("/:type/:id", async (c) => {
     return c.notFound();
   }
 
-  const tmdbData = await getDetails(tmdbId, mediaType);
+  const [tmdbData, availability] = await Promise.all([
+    getDetails(tmdbId, mediaType),
+    getMediaAvailability(tmdbId, mediaType),
+  ]);
   if (!tmdbData) return c.notFound();
 
   const db = c.var.db;
@@ -64,6 +68,7 @@ detail.get("/:type/:id", async (c) => {
       existingItem: existing ?? null,
       locale,
       searchQuery,
+      availability,
     }),
   );
 });
