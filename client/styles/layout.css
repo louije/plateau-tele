@@ -57,7 +57,7 @@
       position: absolute;
       inset: 0;
       left: 50%;
-      width: 100vw;
+      width: calc(100vw + 2px);
       transform: translateX(-50%);
       background: var(--color-bg);
       z-index: -1;
