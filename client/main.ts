@@ -12,12 +12,6 @@ if (heroImg) {
   let pullScale = 1;
   let startY = 0;
 
-  const applyTransform = () => {
-    heroImg.style.transform = `translateY(${scrollY * -0.15}px) scale(${pullScale})`;
-  };
-
-  window.addEventListener("scroll", applyTransform, { passive: true });
-
   window.addEventListener("touchstart", (e) => {
     heroImg.style.transition = "";
     startY = e.touches[0]!.clientY;
@@ -28,14 +22,14 @@ if (heroImg) {
     const pull = e.touches[0]!.clientY - startY;
     if (pull <= 0) { pullScale = 1; return; }
     pullScale = 1 + pull * 0.002;
-    applyTransform();
+    heroImg.style.scale = String(pullScale);
   }, { passive: true });
 
   window.addEventListener("touchend", () => {
     if (pullScale <= 1) return;
-    heroImg.style.transition = "transform 0.3s ease-out";
+    heroImg.style.transition = "scale 0.3s ease-out";
     pullScale = 1;
-    applyTransform();
+    heroImg.style.scale = "1";
     heroImg.addEventListener("transitionend", () => {
       heroImg.style.transition = "";
     }, { once: true });
