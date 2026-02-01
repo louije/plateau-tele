@@ -101,6 +101,15 @@ drizzle.config.ts       # Drizzle-kit config
 | GET | `/detail/:type/:id` | Server-rendered detail page |
 | GET | `/detail/:type/:id/add` | Server-rendered add-to-list modal |
 
+## Authentication
+
+WebAuthn (passkeys) via [Quiq/webauthn_proxy](https://github.com/Quiq/webauthn_proxy), a standalone Go binary running as a separate systemd service. Caddy's `forward_auth` delegates auth checks to it. The proxy handles `/webauthn/login` and `/webauthn/auth`; everything else is gated behind the auth check.
+
+- Config and binary live on the server outside the app directory.
+- Credentials are in a `credentials.yml` file alongside the proxy config. Registration via `/webauthn/register` produces a base64 blob that must be pasted into this file and the proxy restarted — registration alone doesn't grant access.
+- The `/webauthn/register` route is blocked at the Caddy level (403) as an extra precaution.
+- The proxy sets `X-Authenticated-User` header on authenticated requests.
+
 ## How things connect
 
 - Home page is a static HTML shell (`client/index.html`) with two web components
