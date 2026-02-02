@@ -50,6 +50,7 @@
     gap: var(--space-xs);
     align-content: start;
     justify-items: start;
+    min-width: 0;
   }
 
   .detail-hero__title {
