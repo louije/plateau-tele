@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
+import { sql } from "drizzle-orm";
 import type { BunSQLiteDatabase } from "drizzle-orm/bun-sqlite";
 import type * as schema from "./db/schema.js";
 import { items } from "./routes/items.js";
@@ -25,6 +26,12 @@ export function createApp(db: DbInstance) {
   app.use("*", async (c, next) => {
     c.set("db", db);
     await next();
+  });
+
+  app.get("/healthz", (c) => {
+    const db = c.get("db");
+    db.run(sql`SELECT 1`);
+    return c.json({ status: "ok" });
   });
 
   app.route("/api/items", items);
