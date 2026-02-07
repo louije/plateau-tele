@@ -89,5 +89,9 @@
 
   main.layout-wide {
     max-width: none;
+
+    &::before {
+      display: none;
+    }
   }
 }
