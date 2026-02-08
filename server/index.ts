@@ -67,3 +67,19 @@ export default {
 };
 
 console.log(`plateau-télé running on http://localhost:${port}`);
+
+// When running under slot-machine, serve /healthz on INTERNAL_PORT too.
+const internalPort = Number(process.env.INTERNAL_PORT);
+if (process.env.SLOT_MACHINE && internalPort && internalPort !== port) {
+  Bun.serve({
+    port: internalPort,
+    fetch(req) {
+      const url = new URL(req.url);
+      if (url.pathname === "/healthz") {
+        return server.fetch(req);
+      }
+      return new Response("not found", { status: 404 });
+    },
+  });
+  console.log(`slot-machine internal port on :${internalPort}`);
+}
