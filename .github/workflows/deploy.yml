@@ -29,4 +29,4 @@ jobs:
       - name: Deploy
         run: |
           git push plateau-tele@ljt.cc:/srv/plateau-tele/repo.git HEAD:main --force
-          ssh plateau-tele@ljt.cc '/srv/plateau-tele/deploy.sh'
+          ssh plateau-tele@ljt.cc '/srv/plateau-tele/slot-machine update && /srv/plateau-tele/slot-machine deploy ${{ github.sha }}'
