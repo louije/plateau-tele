@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup SSH
         env:
@@ -26,13 +28,5 @@ jobs:
 
       - name: Deploy
         run: |
-          rsync -avz --delete \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='.DS_Store' \
-            --exclude='data/' \
-            --exclude='.env' \
-            --exclude='.claude' \
-            ./ plateau-tele@ljt.cc:/srv/plateau-tele/current/
-
+          git push plateau-tele@ljt.cc:/srv/plateau-tele/repo.git HEAD:main --force
           ssh plateau-tele@ljt.cc '/srv/plateau-tele/deploy.sh'
