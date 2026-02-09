@@ -1,7 +1,7 @@
 {
   "setup_command": "bun install",
   "start_command": "bun run start",
-  "port": 3000,
+  "port": 3003,
   "health_endpoint": "/healthz",
   "health_timeout_ms": 10000,
   "drain_timeout_ms": 5000,
