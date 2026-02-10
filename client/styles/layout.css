@@ -22,6 +22,44 @@
     color: inherit;
   }
 
+  /* ---- Header nav (detail / add-modal pages) ---- */
+  header nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* ---- Chat link ---- */
+  .chat-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    color: var(--color-text);
+    transition: background 0.15s;
+  }
+
+  .chat-link:active {
+    background: color-mix(in srgb, var(--color-text) 10%, transparent);
+  }
+
+  /* Chat link floating on home page */
+  .chat-link--home {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + var(--space-sm));
+    right: var(--space-md);
+    z-index: 10;
+    background: color-mix(in srgb, var(--color-bg) 60%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .chat-link--home:active {
+    background: color-mix(in srgb, var(--color-bg) 80%, transparent);
+  }
+
   /* ---- Home hero ---- */
   .hero {
     position: sticky;
