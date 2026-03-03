@@ -245,6 +245,12 @@
     cursor: default;
   }
 
+  .btn-request--error {
+    border-color: var(--color-danger);
+    color: var(--color-danger);
+    background: transparent;
+  }
+
   /* ---- Watch providers ---- */
   .watch-providers h3 {
     font-size: 1rem;
