@@ -29,6 +29,7 @@ const fr: typeof en = {
   "detail.availableOnJellyfin": "Déjà téléchargé",
   "detail.requested": "Téléchargement demandé",
   "detail.requestDownload": "Demander le téléchargement",
+  "detail.requestError": "Échec — réessayer",
   "detail.watchProviders": "Où regarder",
   "detail.streaming": "Streaming",
   "detail.buy": "Achat / Location",

@@ -32,13 +32,17 @@ export async function getMediaAvailability(
     const res = await fetch(`${cfg.url}/api/v1/${mediaType}/${tmdbId}`, {
       headers: { "X-Api-Key": cfg.key },
     });
-    if (!res.ok) return { status: "unavailable" };
+    if (!res.ok) {
+      console.warn(`[jellyseerr] availability check failed: ${res.status} for ${mediaType}/${tmdbId}`);
+      return { status: "unavailable" };
+    }
 
     const data = (await res.json()) as { mediaInfo?: { status?: number } };
     if (!data.mediaInfo) return { status: "unavailable" };
 
     return { status: statusFromCode(data.mediaInfo.status ?? 1) };
-  } catch {
+  } catch (e) {
+    console.error(`[jellyseerr] availability check error for ${mediaType}/${tmdbId}:`, e);
     return { status: "unavailable" };
   }
 }
@@ -62,10 +66,12 @@ export async function requestMedia(
 
     if (!res.ok) {
       const text = await res.text();
+      console.error(`[jellyseerr] request failed: ${res.status} for ${mediaType}/${tmdbId}:`, text);
       return { ok: false, error: text };
     }
     return { ok: true };
   } catch (e) {
+    console.error(`[jellyseerr] request error for ${mediaType}/${tmdbId}:`, e);
     return { ok: false, error: String(e) };
   }
 }

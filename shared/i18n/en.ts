@@ -29,6 +29,7 @@ const en = {
   "detail.availableOnJellyfin": "Available on Jellyfin",
   "detail.requested": "Requested",
   "detail.requestDownload": "Request download",
+  "detail.requestError": "Request failed — try again",
   "detail.watchProviders": "Where to watch",
   "detail.streaming": "Streaming",
   "detail.buy": "Buy / Rent",

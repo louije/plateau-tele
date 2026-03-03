@@ -63,24 +63,40 @@ ctaForms.forEach((form) => {
 // Jellyseerr request button
 const requestBtn = document.querySelector<HTMLButtonElement>(".btn-request");
 if (requestBtn) {
+  const originalText = requestBtn.textContent!.trim();
+
   requestBtn.addEventListener("click", async () => {
+    // Reset error state if retrying
+    requestBtn.classList.remove("btn-request--error");
+    requestBtn.textContent = originalText;
     requestBtn.disabled = true;
+
     const tmdbId = Number(requestBtn.dataset.tmdbId);
     const mediaType = requestBtn.dataset.mediaType;
 
-    const res = await fetch("/api/jellyseerr/request", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ tmdbId, mediaType }),
-    });
+    try {
+      const res = await fetch("/api/jellyseerr/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tmdbId, mediaType }),
+      });
 
-    if (res.ok) {
-      requestBtn.classList.remove("btn-cta--secondary");
-      requestBtn.classList.add("btn-request--done");
-      requestBtn.textContent = document.documentElement.lang === "en"
-        ? "Requested" : "Téléchargement demandé";
-    } else {
+      if (res.ok) {
+        requestBtn.classList.remove("btn-cta--secondary");
+        requestBtn.classList.add("btn-request--done");
+        requestBtn.textContent = document.documentElement.lang === "en"
+          ? "Requested" : "Téléchargement demandé";
+      } else {
+        requestBtn.disabled = false;
+        requestBtn.classList.add("btn-request--error");
+        requestBtn.textContent = document.documentElement.lang === "en"
+          ? "Request failed \u2014 try again" : "\u00c9chec \u2014 r\u00e9essayer";
+      }
+    } catch {
       requestBtn.disabled = false;
+      requestBtn.classList.add("btn-request--error");
+      requestBtn.textContent = document.documentElement.lang === "en"
+        ? "Request failed \u2014 try again" : "\u00c9chec \u2014 r\u00e9essayer";
     }
   });
 }
