@@ -102,12 +102,15 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
           ${subtitle ? html`<p class="detail-hero__subtitle">${subtitle}</p>` : ""}
           <p class="detail-hero__meta">${meta}</p>
           ${director ? html`<p class="detail-hero__director">${directorLabel}${raw("&nbsp;: ")}${director}</p>` : ""}
-          <a href="${`callsheet://open/${mediaType}/${String(tmdbId)}`}" class="btn-callsheet">
-            ${t(locale, "detail.openInCallSheet")}${raw("&nbsp;↗")}
-          </a>
-          <a href="${`https://www.tunefind.com/${mediaType === "tv" ? "show" : "movie"}/${tunefindSlug(title)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
-            Tunefind${raw("&nbsp;↗")}
-          </a>
+          <div class="detail-hero__links">
+            <a href="${`callsheet://open/${mediaType}/${String(tmdbId)}`}" class="btn-callsheet">
+              ${t(locale, "detail.openInCallSheet")}${raw("&nbsp;↗")}
+            </a>
+            <span class="detail-hero__links-sep" aria-hidden="true">·</span>
+            <a href="${`https://www.tunefind.com/${mediaType === "tv" ? "show" : "movie"}/${tunefindSlug(title)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
+              Tunefind${raw("&nbsp;↗")}
+            </a>
+          </div>
           ${renderCTA(data, qs)}
         </div>
       </div>

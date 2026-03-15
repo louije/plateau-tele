@@ -78,6 +78,18 @@
     margin: 0;
   }
 
+  .detail-hero__links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+
+  .detail-hero__links-sep {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    user-select: none;
+  }
+
   .btn-callsheet {
     font-size: 0.8rem;
     color: var(--color-text-muted);
