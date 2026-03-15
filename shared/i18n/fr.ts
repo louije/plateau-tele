@@ -36,6 +36,7 @@ const fr: typeof en = {
   "detail.watchProviders": "Où regarder",
   "detail.streaming": "Streaming",
   "detail.buy": "Achat / Location",
+  "detail.openInCallSheet": "CallSheet",
   "addModal.emptyWarning": "Pas de raison ? Appuyez encore pour ajouter.",
 } as const;
 

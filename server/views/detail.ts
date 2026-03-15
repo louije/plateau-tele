@@ -92,6 +92,9 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
           ${subtitle ? html`<p class="detail-hero__subtitle">${subtitle}</p>` : ""}
           <p class="detail-hero__meta">${meta}</p>
           ${director ? html`<p class="detail-hero__director">${directorLabel}${raw("&nbsp;: ")}${director}</p>` : ""}
+          <a href="${`callsheet://open/${mediaType}/${String(tmdbId)}`}" class="btn-callsheet">
+            ${t(locale, "detail.openInCallSheet")}${raw("&nbsp;↗")}
+          </a>
           ${renderCTA(data, qs)}
         </div>
       </div>
