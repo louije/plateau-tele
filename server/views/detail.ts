@@ -170,7 +170,16 @@ function renderWatchProviders(tmdbData: Record<string, unknown>, data: DetailPag
       ${availability.status === "available"
         ? html`<p class="availability availability--available">${t(locale, "detail.availableOnJellyfin")}</p>`
         : availability.status === "requested" || availability.status === "processing"
-          ? html`<p class="availability availability--requested">${t(locale, "detail.requested")}</p>`
+          ? html`
+            <div class="availability-row">
+              <p class="availability availability--requested">${t(locale, "detail.requested")}</p>
+              ${availability.requestId
+                ? html`<button class="btn-cancel-request" data-request-id="${String(availability.requestId)}"
+                    data-tmdb-id="${String(tmdbId)}" data-media-type="${mediaType}">
+                    ${t(locale, "detail.cancelRequest")}
+                  </button>`
+                : ""}
+            </div>`
           : html`
             <button class="btn-cta btn-cta--secondary btn-request"
               data-tmdb-id="${String(tmdbId)}" data-media-type="${mediaType}">

@@ -61,18 +61,16 @@ ctaForms.forEach((form) => {
 });
 
 // Jellyseerr request button
-const requestBtn = document.querySelector<HTMLButtonElement>(".btn-request");
-if (requestBtn) {
-  const originalText = requestBtn.textContent!.trim();
+function attachRequestHandler(btn: HTMLButtonElement) {
+  const originalText = btn.textContent!.trim();
 
-  requestBtn.addEventListener("click", async () => {
-    // Reset error state if retrying
-    requestBtn.classList.remove("btn-request--error");
-    requestBtn.textContent = originalText;
-    requestBtn.disabled = true;
+  btn.addEventListener("click", async () => {
+    btn.classList.remove("btn-request--error");
+    btn.textContent = originalText;
+    btn.disabled = true;
 
-    const tmdbId = Number(requestBtn.dataset.tmdbId);
-    const mediaType = requestBtn.dataset.mediaType;
+    const tmdbId = Number(btn.dataset.tmdbId);
+    const mediaType = btn.dataset.mediaType;
 
     try {
       const res = await fetch("/api/jellyseerr/request", {
@@ -82,21 +80,69 @@ if (requestBtn) {
       });
 
       if (res.ok) {
-        requestBtn.classList.remove("btn-cta--secondary");
-        requestBtn.classList.add("btn-request--done");
-        requestBtn.textContent = document.documentElement.lang === "en"
+        btn.classList.remove("btn-cta--secondary");
+        btn.classList.add("btn-request--done");
+        btn.textContent = document.documentElement.lang === "en"
           ? "Requested" : "Téléchargement demandé";
       } else {
-        requestBtn.disabled = false;
-        requestBtn.classList.add("btn-request--error");
-        requestBtn.textContent = document.documentElement.lang === "en"
+        btn.disabled = false;
+        btn.classList.add("btn-request--error");
+        btn.textContent = document.documentElement.lang === "en"
           ? "Request failed \u2014 try again" : "\u00c9chec \u2014 r\u00e9essayer";
       }
     } catch {
-      requestBtn.disabled = false;
-      requestBtn.classList.add("btn-request--error");
-      requestBtn.textContent = document.documentElement.lang === "en"
+      btn.disabled = false;
+      btn.classList.add("btn-request--error");
+      btn.textContent = document.documentElement.lang === "en"
         ? "Request failed \u2014 try again" : "\u00c9chec \u2014 r\u00e9essayer";
+    }
+  });
+}
+
+const requestBtn = document.querySelector<HTMLButtonElement>(".btn-request");
+if (requestBtn) attachRequestHandler(requestBtn);
+
+// Jellyseerr cancel-request button
+const cancelBtn = document.querySelector<HTMLButtonElement>(".btn-cancel-request");
+if (cancelBtn) {
+  cancelBtn.addEventListener("click", async () => {
+    cancelBtn.disabled = true;
+    cancelBtn.classList.remove("btn-cancel-request--error");
+
+    const requestId = cancelBtn.dataset.requestId;
+
+    try {
+      const res = await fetch(`/api/jellyseerr/request/${requestId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        // Replace the availability row with the "Request download" button
+        const row = cancelBtn.closest(".availability-row");
+        if (row) {
+          const tmdbId = cancelBtn.dataset.tmdbId;
+          const mediaType = cancelBtn.dataset.mediaType;
+          const btn = document.createElement("button");
+          btn.className = "btn-cta btn-cta--secondary btn-request";
+          btn.dataset.tmdbId = tmdbId!;
+          btn.dataset.mediaType = mediaType!;
+          btn.textContent = document.documentElement.lang === "en"
+            ? "Request download" : "Demander le téléchargement";
+          row.replaceWith(btn);
+          // Re-attach the request handler on the new button
+          attachRequestHandler(btn);
+        }
+      } else {
+        cancelBtn.disabled = false;
+        cancelBtn.classList.add("btn-cancel-request--error");
+        cancelBtn.textContent = document.documentElement.lang === "en"
+          ? "Cancel failed \u2014 try again" : "\u00c9chec \u2014 r\u00e9essayer";
+      }
+    } catch {
+      cancelBtn.disabled = false;
+      cancelBtn.classList.add("btn-cancel-request--error");
+      cancelBtn.textContent = document.documentElement.lang === "en"
+        ? "Cancel failed \u2014 try again" : "\u00c9chec \u2014 r\u00e9essayer";
     }
   });
 }

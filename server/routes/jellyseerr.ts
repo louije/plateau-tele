@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { requestMedia, getMediaAvailability } from "../jellyseerr.js";
+import { requestMedia, cancelRequest, getMediaAvailability } from "../jellyseerr.js";
 import type { AppEnv } from "../app.js";
 import type { MediaType } from "../../shared/types.js";
 
@@ -16,6 +16,19 @@ jellyseerr.post("/request", async (c) => {
   }
 
   const result = await requestMedia(body.tmdbId, body.mediaType);
+  if (!result.ok) {
+    return c.json({ error: result.error }, 502);
+  }
+  return c.json({ ok: true });
+});
+
+jellyseerr.delete("/request/:id", async (c) => {
+  const id = Number(c.req.param("id"));
+  if (!id || !Number.isInteger(id)) {
+    return c.json({ error: "valid request id required" }, 400);
+  }
+
+  const result = await cancelRequest(id);
   if (!result.ok) {
     return c.json({ error: result.error }, 502);
   }

@@ -4,6 +4,7 @@ export type JellyfinStatus = "available" | "requested" | "processing" | "unavail
 
 export interface MediaAvailability {
   status: JellyfinStatus;
+  requestId: number | null;
 }
 
 function config() {
@@ -26,7 +27,7 @@ export async function getMediaAvailability(
   mediaType: MediaType,
 ): Promise<MediaAvailability> {
   const cfg = config();
-  if (!cfg) return { status: "unavailable" };
+  if (!cfg) return { status: "unavailable", requestId: null };
 
   try {
     const res = await fetch(`${cfg.url}/api/v1/${mediaType}/${tmdbId}`, {
@@ -34,16 +35,49 @@ export async function getMediaAvailability(
     });
     if (!res.ok) {
       console.warn(`[jellyseerr] availability check failed: ${res.status} for ${mediaType}/${tmdbId}`);
-      return { status: "unavailable" };
+      return { status: "unavailable", requestId: null };
     }
 
-    const data = (await res.json()) as { mediaInfo?: { status?: number } };
-    if (!data.mediaInfo) return { status: "unavailable" };
+    const data = (await res.json()) as {
+      mediaInfo?: {
+        status?: number;
+        requests?: { id: number; status: number }[];
+      };
+    };
+    if (!data.mediaInfo) return { status: "unavailable", requestId: null };
 
-    return { status: statusFromCode(data.mediaInfo.status ?? 1) };
+    const status = statusFromCode(data.mediaInfo.status ?? 1);
+    const pendingRequest = data.mediaInfo.requests?.find(
+      (r) => r.status === 1 || r.status === 2,
+    );
+    return { status, requestId: pendingRequest?.id ?? null };
   } catch (e) {
     console.error(`[jellyseerr] availability check error for ${mediaType}/${tmdbId}:`, e);
-    return { status: "unavailable" };
+    return { status: "unavailable", requestId: null };
+  }
+}
+
+export async function cancelRequest(
+  requestId: number,
+): Promise<{ ok: boolean; error?: string }> {
+  const cfg = config();
+  if (!cfg) return { ok: false, error: "Jellyseerr not configured" };
+
+  try {
+    const res = await fetch(`${cfg.url}/api/v1/request/${requestId}`, {
+      method: "DELETE",
+      headers: { "X-Api-Key": cfg.key },
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error(`[jellyseerr] cancel failed: ${res.status} for request ${requestId}:`, text);
+      return { ok: false, error: text };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error(`[jellyseerr] cancel error for request ${requestId}:`, e);
+    return { ok: false, error: String(e) };
   }
 }
 

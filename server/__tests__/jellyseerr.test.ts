@@ -122,6 +122,57 @@ describe("POST /api/jellyseerr/request", () => {
   });
 });
 
+describe("DELETE /api/jellyseerr/request/:id", () => {
+  it("cancels a request successfully", async () => {
+    const calls: { url: string; method: string }[] = [];
+    globalThis.fetch = mock((input: string | URL | Request, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input.toString();
+      calls.push({ url, method: init?.method || "GET" });
+      return Promise.resolve(new Response(null, { status: 204 }));
+    }) as typeof fetch;
+
+    const res = await app.request("/api/jellyseerr/request/42", {
+      method: "DELETE",
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { ok: boolean };
+    expect(json.ok).toBe(true);
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]!.url).toBe("http://jellyseerr:5055/api/v1/request/42");
+    expect(calls[0]!.method).toBe("DELETE");
+  });
+
+  it("returns 400 for non-numeric id", async () => {
+    const res = await app.request("/api/jellyseerr/request/abc", {
+      method: "DELETE",
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 502 when Jellyseerr errors", async () => {
+    globalThis.fetch = mock(() => {
+      return Promise.resolve(new Response("Not Found", { status: 404 }));
+    }) as typeof fetch;
+
+    const res = await app.request("/api/jellyseerr/request/99", {
+      method: "DELETE",
+    });
+    expect(res.status).toBe(502);
+  });
+
+  it("returns 502 when Jellyseerr is not configured", async () => {
+    delete process.env.JELLYSEERR_URL;
+    delete process.env.JELLYSEERR_API_KEY;
+
+    const res = await app.request("/api/jellyseerr/request/42", {
+      method: "DELETE",
+    });
+    expect(res.status).toBe(502);
+  });
+});
+
 describe("POST /api/jellyseerr/batch-status", () => {
   it("returns statuses for multiple items", async () => {
     globalThis.fetch = mock((input: string | URL | Request) => {
@@ -159,6 +210,48 @@ describe("POST /api/jellyseerr/batch-status", () => {
     expect(json).toHaveLength(2);
     expect(json[0]).toEqual({ tmdbId: 550, mediaType: "movie", status: "available" });
     expect(json[1]).toEqual({ tmdbId: 1396, mediaType: "tv", status: "unavailable" });
+  });
+
+  it("returns requestId from pending requests", async () => {
+    globalThis.fetch = mock(() => {
+      return Promise.resolve(
+        new Response(JSON.stringify({
+          mediaInfo: {
+            status: 2,
+            requests: [{ id: 77, status: 1 }],
+          },
+        }), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    // Use batch-status to indirectly verify getMediaAvailability behavior
+    // The requestId isn't exposed via batch-status, but we test the core function
+    const { getMediaAvailability } = await import("../jellyseerr.js");
+    const result = await getMediaAvailability(550, "movie");
+    expect(result.requestId).toBe(77);
+    expect(result.status).toBe("requested");
+  });
+
+  it("returns null requestId when no pending requests", async () => {
+    globalThis.fetch = mock(() => {
+      return Promise.resolve(
+        new Response(JSON.stringify({
+          mediaInfo: {
+            status: 5,
+            requests: [{ id: 10, status: 3 }],
+          },
+        }), {
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
+    }) as typeof fetch;
+
+    const { getMediaAvailability } = await import("../jellyseerr.js");
+    const result = await getMediaAvailability(550, "movie");
+    expect(result.requestId).toBeNull();
+    expect(result.status).toBe("available");
   });
 
   it("maps Jellyseerr status 2 to requested", async () => {
