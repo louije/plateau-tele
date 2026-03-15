@@ -8,6 +8,16 @@ import { displayTitle } from "../../client/lib/title.js";
 import type { MediaType } from "../../shared/types.js";
 import type { MediaAvailability } from "../jellyseerr.js";
 
+function tunefindSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/['\u2018\u2019\u02bc]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 interface CastMember {
   name: string;
   character: string;
@@ -76,7 +86,7 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
       </nav>
     </header>
 
-    <main class="detail-page layout-wide" data-tunefind-title="${title}" data-tunefind-type="${mediaType}" data-tunefind-year="${year || ""}">
+    <main class="detail-page layout-wide">
       <div class="detail-hero">
         ${pPath
           ? html`<img
@@ -94,6 +104,9 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
           ${director ? html`<p class="detail-hero__director">${directorLabel}${raw("&nbsp;: ")}${director}</p>` : ""}
           <a href="${`callsheet://open/${mediaType}/${String(tmdbId)}`}" class="btn-callsheet">
             ${t(locale, "detail.openInCallSheet")}${raw("&nbsp;↗")}
+          </a>
+          <a href="${`https://www.tunefind.com/${mediaType === "tv" ? "show" : "movie"}/${tunefindSlug(title)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
+            Tunefind${raw("&nbsp;↗")}
           </a>
           ${renderCTA(data, qs)}
         </div>
@@ -122,7 +135,6 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
           </section>`
         : ""}
 
-      <section class="tunefind-section" hidden></section>
     </main>
 
     <script type="module" src="/detail.js"></script>
