@@ -76,7 +76,7 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
       </nav>
     </header>
 
-    <main class="detail-page layout-wide">
+    <main class="detail-page layout-wide" data-tunefind-title="${title}" data-tunefind-type="${mediaType}" data-tunefind-year="${year || ""}">
       <div class="detail-hero">
         ${pPath
           ? html`<img
@@ -121,6 +121,8 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
             </ul>
           </section>`
         : ""}
+
+      <section class="tunefind-section" hidden></section>
     </main>
 
     <script type="module" src="/detail.js"></script>
