@@ -36,6 +36,7 @@ const en = {
   "detail.watchProviders": "Where to watch",
   "detail.streaming": "Streaming",
   "detail.buy": "Buy / Rent",
+  "detail.openInCallSheet": "CallSheet",
   "addModal.emptyWarning": "No reason? Press again to add anyway.",
 } as const;
 

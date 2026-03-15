@@ -78,6 +78,16 @@
     margin: 0;
   }
 
+  .btn-callsheet {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+  }
+
+  .btn-callsheet:active {
+    color: var(--color-accent);
+  }
+
   .detail-hero__info .btn-cta,
   .detail-hero__info .cta-form,
   .detail-hero__info .cta-status,
