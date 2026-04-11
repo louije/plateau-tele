@@ -83,7 +83,6 @@ shared/                 # Code shared between server and client
   tmdb-image.ts         # TMDB image URL builder
   types.ts              # TypeScript interfaces (WatchItem, SSEEvent, etc.)
 
-esbuild.config.js       # Client bundler config (two entry points)
 drizzle.config.ts       # Drizzle-kit config
 ```
 
