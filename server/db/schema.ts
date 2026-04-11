@@ -17,6 +17,7 @@ export const watchItems = sqliteTable("watch_items", {
   duration: text("duration"),
   position: real("position").notNull(),
   watched: integer("watched", { mode: "boolean" }).notNull().default(false),
+  watchedAt: text("watched_at"),
   createdAt: text("created_at")
     .notNull()
     .default(sql`(datetime('now'))`),
