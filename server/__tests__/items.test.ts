@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "bun:test";
 import { createApp } from "../app.js";
 import { createTestDb } from "../test-utils.js";
+import * as schema from "../db/schema.js";
 import type { DbInstance } from "../app.js";
 import type { WatchItem, WatchItemCreate } from "../../shared/types.js";
 
@@ -115,6 +116,22 @@ describe("GET /api/items", () => {
       "Inception",
       "Fight Club",
     ]);
+  });
+
+  it("breaks ties on watchedAt by id DESC", async () => {
+    // Seed rows directly with an identical watchedAt so the tiebreak clause fires.
+    const now = "2026-04-12 14:00:00";
+    db.insert(schema.watchItems).values([
+      { tmdbId: 1, mediaType: "movie", title: "First",  originalLanguage: "en", position: 0, watched: true,  watchedAt: now, addedBy: "A" },
+      { tmdbId: 2, mediaType: "movie", title: "Second", originalLanguage: "en", position: 1, watched: true,  watchedAt: now, addedBy: "A" },
+      { tmdbId: 3, mediaType: "movie", title: "Third",  originalLanguage: "en", position: 2, watched: true,  watchedAt: now, addedBy: "A" },
+    ]).run();
+
+    const res = await app.request("/api/items?watched=true");
+    const items = (await res.json()) as WatchItem[];
+    // All three share watchedAt, so order is purely id DESC — insertion order
+    // reversed (drizzle auto-increments ids).
+    expect(items.map((i) => i.title)).toEqual(["Third", "Second", "First"]);
   });
 
   it("returns items ordered by position", async () => {
