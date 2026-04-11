@@ -24,6 +24,7 @@ function rowToItem(row: typeof schema.watchItems.$inferSelect): WatchItem {
     duration: row.duration,
     position: row.position,
     watched: row.watched,
+    watchedAt: row.watchedAt,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -105,12 +106,19 @@ items.patch("/:id", async (c) => {
   const id = Number(c.req.param("id"));
   const body = await c.req.json<Partial<Pick<WatchItem, "note" | "watched">>>();
 
+  const updateSet: Record<string, unknown> = {
+    ...body,
+    updatedAt: sql`datetime('now')`,
+  };
+  if (body.watched === true) {
+    updateSet.watchedAt = sql`datetime('now')`;
+  } else if (body.watched === false) {
+    updateSet.watchedAt = null;
+  }
+
   const updated = db
     .update(schema.watchItems)
-    .set({
-      ...body,
-      updatedAt: sql`datetime('now')`,
-    })
+    .set(updateSet)
     .where(eq(schema.watchItems.id, id))
     .returning()
     .get();

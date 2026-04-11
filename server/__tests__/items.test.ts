@@ -268,3 +268,67 @@ describe("DELETE /api/items/:id", () => {
     expect(res.status).toBe(200);
   });
 });
+
+describe("PATCH /api/items/:id — watched_at handling", () => {
+  it("sets watchedAt when watched flips to true", async () => {
+    const createRes = await req("/", {
+      method: "POST",
+      body: JSON.stringify(sampleItem),
+    });
+    const created = (await createRes.json()) as WatchItem;
+    expect(created.watchedAt).toBeNull();
+
+    const patchRes = await req(`/${created.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ watched: true }),
+    });
+    const patched = (await patchRes.json()) as WatchItem;
+    expect(patched.watched).toBe(true);
+    expect(patched.watchedAt).toBeTruthy();
+    expect(Date.parse(patched.watchedAt!)).not.toBeNaN();
+  });
+
+  it("clears watchedAt when watched flips back to false", async () => {
+    const createRes = await req("/", {
+      method: "POST",
+      body: JSON.stringify(sampleItem),
+    });
+    const created = (await createRes.json()) as WatchItem;
+
+    await req(`/${created.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ watched: true }),
+    });
+    const patchRes = await req(`/${created.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ watched: false }),
+    });
+    const patched = (await patchRes.json()) as WatchItem;
+    expect(patched.watched).toBe(false);
+    expect(patched.watchedAt).toBeNull();
+  });
+
+  it("leaves watchedAt untouched on note-only edits", async () => {
+    const createRes = await req("/", {
+      method: "POST",
+      body: JSON.stringify(sampleItem),
+    });
+    const created = (await createRes.json()) as WatchItem;
+    const watchRes = await req(`/${created.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ watched: true }),
+    });
+    const firstWatchedAt = ((await watchRes.json()) as WatchItem).watchedAt;
+
+    // Wait a tick so datetime('now') would differ if touched
+    await new Promise((r) => setTimeout(r, 1100));
+
+    const noteRes = await req(`/${created.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({ note: "updated reason" }),
+    });
+    const afterNote = (await noteRes.json()) as WatchItem;
+    expect(afterNote.note).toBe("updated reason");
+    expect(afterNote.watchedAt).toBe(firstWatchedAt);
+  });
+});
