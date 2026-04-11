@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { eq, asc, sql } from "drizzle-orm";
+import { eq, asc, desc, sql } from "drizzle-orm";
 import { broadcast } from "../sse.js";
 import * as schema from "../db/schema.js";
 import type { AppEnv } from "../app.js";
@@ -30,16 +30,19 @@ function rowToItem(row: typeof schema.watchItems.$inferSelect): WatchItem {
   };
 }
 
-// GET /api/items — list all unwatched, ordered by position
+// GET /api/items — list all unwatched (default), or watched with ?watched=true
 items.get("/", (c) => {
   const db = c.var.db;
   const showWatched = c.req.query("watched") === "true";
-  const rows = db
+  const query = db
     .select()
     .from(schema.watchItems)
-    .where(eq(schema.watchItems.watched, showWatched))
-    .orderBy(asc(schema.watchItems.position))
-    .all();
+    .where(eq(schema.watchItems.watched, showWatched));
+  const rows = showWatched
+    ? query
+        .orderBy(desc(schema.watchItems.watchedAt), desc(schema.watchItems.id))
+        .all()
+    : query.orderBy(asc(schema.watchItems.position)).all();
   return c.json(rows.map(rowToItem));
 });
 

@@ -83,6 +83,40 @@ describe("GET /api/items", () => {
     expect(items[0]!.watched).toBe(true);
   });
 
+  it("orders watched items by watchedAt DESC", async () => {
+    // Create three items and watch them in a known order.
+    const a = (await (
+      await req("/", { method: "POST", body: JSON.stringify(sampleItem) })
+    ).json()) as WatchItem;
+    const b = (await (
+      await req("/", {
+        method: "POST",
+        body: JSON.stringify({ ...sampleItem, tmdbId: 603, title: "The Matrix" }),
+      })
+    ).json()) as WatchItem;
+    const c = (await (
+      await req("/", {
+        method: "POST",
+        body: JSON.stringify({ ...sampleItem, tmdbId: 27205, title: "Inception" }),
+      })
+    ).json()) as WatchItem;
+
+    // Watch in the order: a, c, b — so the latest-watched order is b, c, a.
+    await req(`/${a.id}`, { method: "PATCH", body: JSON.stringify({ watched: true }) });
+    await new Promise((r) => setTimeout(r, 1100));
+    await req(`/${c.id}`, { method: "PATCH", body: JSON.stringify({ watched: true }) });
+    await new Promise((r) => setTimeout(r, 1100));
+    await req(`/${b.id}`, { method: "PATCH", body: JSON.stringify({ watched: true }) });
+
+    const res = await app.request("/api/items?watched=true");
+    const items = (await res.json()) as WatchItem[];
+    expect(items.map((i) => i.title)).toEqual([
+      "The Matrix",
+      "Inception",
+      "Fight Club",
+    ]);
+  });
+
   it("returns items ordered by position", async () => {
     await req("/", { method: "POST", body: JSON.stringify(sampleItem) });
     await req("/", {
