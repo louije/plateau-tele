@@ -1,13 +1,43 @@
 @layer components {
-  /* ---- Search bar ---- */
-  search-bar {
-    display: block;
+  /* ---- Home header ---- */
+  .home-header {
+    display: flex;
+    align-items: stretch;
+    gap: var(--space-sm);
     position: sticky;
     top: env(safe-area-inset-top, 0px);
     z-index: 10;
     background: var(--color-bg);
     padding-top: var(--space-md);
     margin-top: calc(-1 * var(--space-md));
+  }
+
+  .home-header search-bar {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .home-header__watched-link {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    padding: var(--space-sm);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    color: var(--color-text-muted);
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .home-header__watched-link:hover,
+  .home-header__watched-link:active {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+
+  /* ---- Search bar ---- */
+  search-bar {
+    display: block;
   }
 
   .search-bar {
