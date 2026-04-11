@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="view-transition" content="same-origin" />
+    <title>Films regardés — plateau-télé</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script type="module" src="/watched.js"></script>
+  </head>
+  <body>
+    <header class="page-header">
+      <a class="page-header__back" href="/" aria-label="Retour">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        Retour
+      </a>
+      <h1 class="page-header__title">Films regardés</h1>
+    </header>
+
+    <main>
+      <watched-list></watched-list>
+    </main>
+
+    <template id="watch-item-tpl">
+      <li class="watch-item">
+        <a class="watch-item__link" href="">
+          <img class="watch-item__poster" alt="" loading="lazy" crossorigin="anonymous" />
+          <div class="watch-item__body">
+            <strong class="watch-item__title"></strong>
+            <span class="watch-item__subtitle"></span>
+            <span class="watch-item__meta"></span>
+            <span class="watch-item__watched-at"></span>
+            <span class="watch-item__director"></span>
+            <span class="watch-item__jellyfin"></span>
+            <p class="watch-item__note"></p>
+          </div>
+        </a>
+        <span class="watch-item__added-by"></span>
+        <span class="watch-item__handle" aria-hidden="true"></span>
+      </li>
+    </template>
+  </body>
+</html>

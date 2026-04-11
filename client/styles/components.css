@@ -356,4 +356,25 @@
     }
   }
 
+  .page-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) 0;
+  }
+
+  .page-header__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    color: var(--color-accent);
+    font-size: 0.95rem;
+  }
+
+  .page-header__title {
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0;
+  }
+
 }

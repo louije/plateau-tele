@@ -55,6 +55,8 @@ server.use("/styles.css", serveStatic({ root: "./client" }));
 server.use("/icons/*", serveStatic({ root: "./client" }));
 server.use("/plateau-tele.png", serveStatic({ root: "./shared" }));
 server.use("/index.html", serveStatic({ root: "./client" }));
+server.get("/watched", serveStatic({ root: "./client", path: "watched.html" }));
+server.use("/watched.html", serveStatic({ root: "./client" }));
 
 // SPA fallback
 server.get("/*", serveStatic({ root: "./client", path: "index.html" }));
