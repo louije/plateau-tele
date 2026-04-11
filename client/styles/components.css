@@ -278,6 +278,16 @@
     color: var(--color-text-muted);
   }
 
+  .watch-item__watched-at {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    display: none;
+  }
+
+  .watch-list--watched .watch-item__watched-at {
+    display: inline;
+  }
+
   .watch-item__director {
     font-size: 0.75rem;
     color: var(--color-text-muted);
