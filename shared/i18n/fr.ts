@@ -38,6 +38,13 @@ const fr: typeof en = {
   "detail.buy": "Achat / Location",
   "detail.openInCallSheet": "Callsheet",
   "addModal.emptyWarning": "Pas de raison ? Appuyez encore pour ajouter.",
+  "watchedList.title": "Films regardés",
+  "watchedList.empty": "Rien de regardé pour l'instant.",
+  "watchedList.linkLabel": "Films regardés",
+  "watchItem.watchedToday": "Regardé aujourd'hui",
+  "watchItem.watchedYesterday": "Regardé hier",
+  "watchItem.watchedDaysAgo": "Regardé il y a {n} jours",
+  "watchItem.watchedOn": "Regardé le {date}",
 } as const;
 
 export default fr;

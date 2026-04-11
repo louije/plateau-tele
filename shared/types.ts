@@ -16,6 +16,7 @@ export interface WatchItem {
   duration: string | null;
   position: number;
   watched: boolean;
+  watchedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -38,6 +38,13 @@ const en = {
   "detail.buy": "Buy / Rent",
   "detail.openInCallSheet": "Callsheet",
   "addModal.emptyWarning": "No reason? Press again to add anyway.",
+  "watchedList.title": "Watched films",
+  "watchedList.empty": "Nothing watched yet.",
+  "watchedList.linkLabel": "Watched films",
+  "watchItem.watchedToday": "Watched today",
+  "watchItem.watchedYesterday": "Watched yesterday",
+  "watchItem.watchedDaysAgo": "Watched {n} days ago",
+  "watchItem.watchedOn": "Watched on {date}",
 } as const;
 
 export default en;
