@@ -41,11 +41,15 @@ export class WatchedList extends HTMLElement {
   private onSSE(event: SSEEvent) {
     switch (event.type) {
       case "item:watched":
-        // New arrival on the watched list, or un-watch removing it.
-        if (event.item.watched && !this.items.find((i) => i.id === event.item.id)) {
+        if (event.item.watched) {
+          // New watch OR re-watch of an already-watched item: remove any existing
+          // entry and unshift the fresh one so it lands at the top with the
+          // newest watched_at.
+          this.items = this.items.filter((i) => i.id !== event.item.id);
           this.items.unshift(event.item);
           this.render();
-        } else if (!event.item.watched) {
+        } else {
+          // Un-watched from elsewhere — drop if present.
           const before = this.items.length;
           this.items = this.items.filter((i) => i.id !== event.item.id);
           if (this.items.length !== before) this.render();
