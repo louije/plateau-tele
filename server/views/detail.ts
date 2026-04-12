@@ -51,7 +51,7 @@ function renderSoundtrackLink(
     </a>`;
   }
   const q = year ? `${title} ${year}` : title;
-  return html`<a href="${`https://www.tunefind.com/search/site?q=${encodeURIComponent(q)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
+  return html`<a href="${`https://www.tunefind.com/search?query=${encodeURIComponent(q)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
     Tunefind${raw("&nbsp;↗")}
   </a>`;
 }
