@@ -38,7 +38,7 @@ const fr: typeof en = {
   "detail.buy": "Achat / Location",
   "detail.openInCallSheet": "Callsheet",
   "addModal.emptyWarning": "Pas de raison ? Appuyez encore pour ajouter.",
-  "watchedList.empty": "Rien de regardé pour l'instant.",
+  "watchedList.empty": "Rien n'a été marqué comme regardé.",
   "watchItem.watchedToday": "Regardé aujourd'hui",
   "watchItem.watchedYesterday": "Regardé hier",
   "watchItem.watchedDaysAgo": "Regardé il y a {n} jours",

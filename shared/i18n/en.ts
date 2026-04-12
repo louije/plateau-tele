@@ -38,7 +38,7 @@ const en = {
   "detail.buy": "Buy / Rent",
   "detail.openInCallSheet": "Callsheet",
   "addModal.emptyWarning": "No reason? Press again to add anyway.",
-  "watchedList.empty": "Nothing watched yet.",
+  "watchedList.empty": "Nothing marked as watched yet.",
   "watchItem.watchedToday": "Watched today",
   "watchItem.watchedYesterday": "Watched yesterday",
   "watchItem.watchedDaysAgo": "Watched {n} days ago",
