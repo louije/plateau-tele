@@ -35,6 +35,27 @@ export interface DetailPageData {
   availability: MediaAvailability;
 }
 
+function renderSoundtrackLink(
+  mediaType: MediaType,
+  tmdbData: Record<string, unknown>,
+  title: string,
+  year: string | null,
+): HtmlEscapedString {
+  const imdbId = typeof tmdbData.imdb_id === "string" ? tmdbData.imdb_id : null;
+  // Movies: IMDb soundtrack page (better data coverage). Fall back to tunefind
+  // search only if TMDB didn't give us an imdb_id.
+  // TV: tunefind search (they're strong on per-episode cue lists).
+  if (mediaType === "movie" && imdbId) {
+    return html`<a href="${`https://www.imdb.com/title/${imdbId}/soundtrack/`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
+      IMDb${raw("&nbsp;↗")}
+    </a>`;
+  }
+  const q = year ? `${title} ${year}` : title;
+  return html`<a href="${`https://www.tunefind.com/search/site?q=${encodeURIComponent(q)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
+    Tunefind${raw("&nbsp;↗")}
+  </a>`;
+}
+
 export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
   const { tmdbData, mediaType, tmdbId, existingItem, locale } = data;
 
@@ -98,9 +119,7 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
               ${t(locale, "detail.openInCallSheet")}${raw("&nbsp;↗")}
             </a>
             <span class="detail-hero__links-sep" aria-hidden="true">·</span>
-            <a href="${`https://www.tunefind.com/search/site?q=${encodeURIComponent(year ? `${title} ${year}` : title)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
-              Tunefind${raw("&nbsp;↗")}
-            </a>
+            ${renderSoundtrackLink(mediaType, tmdbData, title, year)}
           </div>
           ${renderCTA(data, qs)}
         </div>
