@@ -107,7 +107,7 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
               ${t(locale, "detail.openInCallSheet")}${raw("&nbsp;↗")}
             </a>
             <span class="detail-hero__links-sep" aria-hidden="true">·</span>
-            <a href="${`https://www.tunefind.com/${mediaType === "tv" ? "show" : "movie"}/${tunefindSlug(title)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
+            <a href="${`https://www.tunefind.com/${mediaType === "tv" ? `show/${tunefindSlug(title)}` : `movie/${tunefindSlug(title)}${year ? `-${year}` : ""}`}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
               Tunefind${raw("&nbsp;↗")}
             </a>
           </div>
