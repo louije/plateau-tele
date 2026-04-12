@@ -8,15 +8,6 @@ import { displayTitle } from "../../client/lib/title.js";
 import type { MediaType } from "../../shared/types.js";
 import type { MediaAvailability } from "../jellyseerr.js";
 
-function tunefindSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/['\u2018\u2019\u02bc]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 interface CastMember {
   name: string;
@@ -107,7 +98,7 @@ export function renderDetailPage(data: DetailPageData): HtmlEscapedString {
               ${t(locale, "detail.openInCallSheet")}${raw("&nbsp;↗")}
             </a>
             <span class="detail-hero__links-sep" aria-hidden="true">·</span>
-            <a href="${`https://www.tunefind.com/${mediaType === "tv" ? `show/${tunefindSlug(title)}` : `movie/${tunefindSlug(title)}${year ? `-${year}` : ""}`}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
+            <a href="${`https://www.tunefind.com/search/site?q=${encodeURIComponent(year ? `${title} ${year}` : title)}`}" class="btn-callsheet" target="_blank" rel="noopener noreferrer">
               Tunefind${raw("&nbsp;↗")}
             </a>
           </div>
