@@ -389,7 +389,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-md);
-    padding: var(--space-md) 0;
+    padding: calc(env(safe-area-inset-top, 0px) + var(--space-md)) 0 var(--space-md);
   }
 
   .page-header__back {
