@@ -8,19 +8,27 @@ Server deployment details are in `claude.local.md` (git-excluded).
 
 ```sh
 bun install
-bun run dev          # server (--watch) + esbuild (--watch) via concurrently
-bun run start        # production server only
-bun run build        # client build only
+bun run dev          # bun --watch server/index.ts
+bun run start        # same, without --watch
 ```
 
-Needs a `.env` with `TMDB_API_KEY`. See `.env.example`.
+There is no build step. The server transpiles `client/*.ts` and `shared/*.ts` to ES
+modules on the fly with `Bun.Transpiler` (see `server/index.ts`) — no bundler, no
+`dist/` output. The `dist/` directory in the working tree is stale and unused.
+
+Needs a `.env`. `TMDB_API_KEY` is the only required key; `DB_PATH`, `PORT`, `LOCALE`,
+`USERS`, `JELLYSEERR_URL` and `JELLYSEERR_API_KEY` are optional. See `.env.example`.
 
 ## Test
 
 ```sh
-bun test             # 32 tests, all backend
-bun test --watch
+bun test             # 109 tests across 7 files
+bun run test:watch
 ```
+
+`bunfig.toml` sets the test root to `server/__tests__`, so `bun test` runs the backend
+suite only. `client/lib/format-watched-at.test.ts` exists but is outside that root —
+run it explicitly with `bun test client/lib/format-watched-at.test.ts`.
 
 Tests use in-memory SQLite via `server/test-utils.ts`. Each test gets a fresh DB with migrations applied. Pattern:
 
@@ -55,26 +63,30 @@ Migrations live in `drizzle/`. DB file is `data/plateau.db` (git-ignored).
 ## Project structure
 
 ```
-client/                 # Browser code, bundled by esbuild
-  components/           # Web Components (<search-bar>, <watch-list>)
+client/                 # Browser code, transpiled per-request by the server
+  components/           # Web Components (<search-bar>, <watch-list>, <watched-list>)
   i18n/                 # Client-side i18n (imports shared keys)
-  lib/                  # Pure utilities (debounce, title display, accent color)
+  lib/                  # Pure utilities (debounce, title display, accent color,
+                        #   watch-item helpers, watched-at formatting + its unit test)
   services/             # API client (fetch wrappers) and SSE subscription
   styles/               # CSS files, layered: reset → base → layout → components
   index.html            # Home page (SPA shell)
+  watched.html          # Watched-list page
   main.ts               # Home page entry point
   detail.ts             # Detail + add-modal entry point
+  watched.ts            # Watched page entry point
   styles.css            # CSS import aggregator (@import)
 
 server/                 # Hono API, runs on Bun
   __tests__/            # Backend tests (bun:test)
   db/                   # Drizzle schema + connection
-  routes/               # Route modules (items, search, events, detail)
+  routes/               # Route modules (items, search, events, detail, jellyseerr)
   views/                # Server-rendered HTML templates (hono/html)
   app.ts                # Hono app factory, route registration
-  index.ts              # Entry point (migrations + static serving)
+  index.ts              # Entry point (migrations, TS transpilation, static serving)
   sse.ts                # SSE broadcast hub
   tmdb.ts               # TMDB API client
+  jellyseerr.ts         # Jellyseerr API client
   test-utils.ts         # In-memory test DB factory
 
 shared/                 # Code shared between server and client
@@ -94,11 +106,16 @@ drizzle.config.ts       # Drizzle-kit config
 | POST | `/api/items` | Add item to watchlist |
 | PATCH | `/api/items/:id` | Update item (mark watched, edit note) |
 | DELETE | `/api/items/:id` | Remove item |
-| PUT | `/api/items/reorder` | Batch reorder |
+| POST | `/api/items/reorder` | Batch reorder |
 | GET | `/api/search?q=` | Search TMDB (movies, TV, people) |
+| GET | `/api/search/details/:type/:id` | TMDB details for one title |
 | GET | `/api/events` | SSE stream |
+| POST | `/api/jellyseerr/request` | Request a title in Jellyseerr |
+| DELETE | `/api/jellyseerr/request/:id` | Cancel a Jellyseerr request |
+| POST | `/api/jellyseerr/batch-status` | Availability for several titles at once |
 | GET | `/detail/:type/:id` | Server-rendered detail page |
 | GET | `/detail/:type/:id/add` | Server-rendered add-to-list modal |
+| GET | `/healthz` | Health check (used by slot-machine) |
 
 ## Authentication
 
@@ -112,21 +129,28 @@ WebAuthn (passkeys) via [Quiq/webauthn_proxy](https://github.com/Quiq/webauthn_p
 ## How things connect
 
 - Home page is a static HTML shell (`client/index.html`) with two web components
+  (`<search-bar>`, `<watch-list>`); `/watched` serves `client/watched.html`
 - `<search-bar>` calls `/api/search`, renders results as links to `/detail/:type/:id`
 - Detail and add-modal pages are server-rendered by Hono views, with client JS for interactivity
 - Cross-document View Transitions (`@view-transition { navigation: auto }`) animate between pages
 - SSE keeps multiple open tabs in sync — any mutation broadcasts to all clients
 - `?q=` param threads search context through detail → add → cancel → home
+- Jellyseerr integration (optional, keyed off `JELLYSEERR_URL`/`JELLYSEERR_API_KEY`)
+  shows availability and lets a title be requested from the detail page
 
 ## Code standards
 
 - No frameworks on the client. Vanilla TypeScript, web components, platform APIs.
-- No build step abstractions — esbuild bundles TS to ES modules, that's it.
+- No build step at all — the server transpiles TS to ES modules per request. Client
+  code must therefore be valid as unbundled ES modules: relative imports carry
+  explicit `.js` extensions, and npm deps are resolved by an import map in the page
+  head against a server route (`sortablejs` → `/vendor/sortable.esm.js`).
 - Semantic HTML. Accessible. Use `<template>` for repeated structures.
 - Server views use `hono/html` tagged template literals, not JSX or a template engine.
 - i18n: all user-facing strings go through `t(locale, key)`. Keys are typed via `as const`.
 - CSS uses `@layer` for ordering, custom properties for tokens, `color-mix()` for derived colors.
 - Keep functions small. Prefer composition over inheritance. No classes except web components.
-- Tests are backend-only. Each test file covers one route module. Use `app.request()` directly.
+- Tests are backend-first. Each backend test file covers one route module and uses
+  `app.request()` directly. Pure client utilities may have unit tests next to them.
 - One concern per file. If a file does two things, split it.
 - Commit messages: one line, no signing, atomic changes.
