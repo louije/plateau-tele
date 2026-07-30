@@ -7,6 +7,7 @@
   "drain_timeout_ms": 5000,
   "env_file": "data/.env",
   "shared_dirs": ["data"],
-  "agent_auth": "trusted",
+  "agent_auth": "header",
+  "agent_access": "allAuth",
   "chat_title": "plateau-télé"
 }
