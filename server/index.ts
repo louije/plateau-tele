@@ -62,19 +62,25 @@ server.use("/watched.html", serveStatic({ root: "./client" }));
 server.get("/*", serveStatic({ root: "./client", path: "index.html" }));
 
 const port = Number(process.env.PORT) || 3000;
+// Bun's default is 0.0.0.0, which exposes the app on every interface — including
+// the tailnet — bypassing the webauthn forward_auth gate in Caddy. Bind loopback
+// only; the reverse proxy (and slot-machine) reach us over localhost.
+const hostname = process.env.HOST || "127.0.0.1";
 
 export default {
   port,
+  hostname,
   fetch: server.fetch,
 };
 
-console.log(`plateau-télé running on http://localhost:${port}`);
+console.log(`plateau-télé running on http://${hostname}:${port}`);
 
 // When running under slot-machine, serve /healthz on INTERNAL_PORT too.
 const internalPort = Number(process.env.INTERNAL_PORT);
 if (process.env.SLOT_MACHINE && internalPort && internalPort !== port) {
   Bun.serve({
     port: internalPort,
+    hostname,
     fetch(req) {
       const url = new URL(req.url);
       if (url.pathname === "/healthz") {
