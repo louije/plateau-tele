@@ -16,8 +16,15 @@ There is no build step. The server transpiles `client/*.ts` and `shared/*.ts` to
 modules on the fly with `Bun.Transpiler` (see `server/index.ts`) — no bundler, no
 `dist/` output. The `dist/` directory in the working tree is stale and unused.
 
-Needs a `.env`. `TMDB_API_KEY` is the only required key; `DB_PATH`, `PORT`, `LOCALE`,
-`USERS`, `JELLYSEERR_URL` and `JELLYSEERR_API_KEY` are optional. See `.env.example`.
+Needs a `.env`. `TMDB_API_KEY` is the only required key; `DB_PATH`, `PORT`, `HOST`,
+`LOCALE`, `USERS`, `JELLYSEERR_URL` and `JELLYSEERR_API_KEY` are optional. See
+`.env.example`.
+
+`HOST` defaults to `127.0.0.1` and should stay there. The app has no auth of its own —
+it sits behind Caddy's webauthn `forward_auth` gate, so any interface it binds beyond
+loopback (Bun's default is `0.0.0.0`) serves the full UI and `/api/items` unauthenticated
+to whatever can reach it. Both listeners honour it: the main port and the slot-machine
+`INTERNAL_PORT` healthz socket.
 
 ## Test
 
